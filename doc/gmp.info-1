@@ -2,7 +2,7 @@ This is ../../gmp/doc/gmp.info, produced by makeinfo version 4.8 from
 ../../gmp/doc/gmp.texi.
 
    This manual describes how to install and use the GNU multiple
-precision arithmetic library, version 4.3.0.
+precision arithmetic library, version 4.3.1.
 
    Copyright 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software
@@ -28,7 +28,7 @@ GNU MP
 ******
 
    This manual describes how to install and use the GNU multiple
-precision arithmetic library, version 4.3.0.
+precision arithmetic library, version 4.3.1.
 
    Copyright 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software
@@ -230,7 +230,7 @@ Build Directory
      directory.  For example
 
           cd /my/build/dir
-          /my/sources/gmp-4.3.0/configure
+          /my/sources/gmp-4.3.1/configure
 
      Not all `make' programs have the necessary features (`VPATH') to
      support this.  In particular, SunOS and Slowaris `make' have bugs
@@ -1491,7 +1491,7 @@ File: gmp.info,  Node: Useful Macros and Constants,  Next: Compatibility with ol
 
  -- Global Constant: const char * const gmp_version
      The GMP version number, as a null-terminated string, in the form
-     "i.j.k".  This release is "4.3.0".  Note that the format "i.j" was
+     "i.j.k".  This release is "4.3.1".  Note that the format "i.j" was
      used when k was zero was used before version 4.3.0.
 
 
@@ -1802,7 +1802,7 @@ Source File Paths
      path to the source directory.
 
           cd /my/build/dir
-          /my/source/dir/gmp-4.3.0/configure
+          /my/source/dir/gmp-4.3.1/configure
 
      This works via `VPATH', and might require GNU `make'.  Alternately
      it might be possible to change the `.c.lo' rules appropriately.
@@ -4561,7 +4561,7 @@ denominator, if needed.  `F' behaves like a float.  For example,
      gmp_printf ("fixed point mpf %.*Ff with %d digits\n", n, f, n);
 
      mp_limb_t l;
-     gmp_printf ("limb %Mu\n", limb);
+     gmp_printf ("limb %Mu\n", l);
 
      const mp_limb_t *ptr;
      mp_size_t       size;
@@ -6475,7 +6475,7 @@ suggested by Alberto Zanoni and Marco Bodrato.  The idea is to split
 the operands into polynomials of different degree.  GMP currently
 splits the smaller operand onto 2 coefficients, i.e., a polynomial of
 degree 1, but the larger operand can be split into 2, 3, or 4
-coefficients, i,e., a polynomial of degree 1 to 3.
+coefficients, i.e., a polynomial of degree 1 to 3.
 
 
 File: gmp.info,  Node: Division Algorithms,  Next: Greatest Common Divisor Algorithms,  Prev: Multiplication Algorithms,  Up: Algorithms

@@ -2,7 +2,7 @@ dnl  AMD64 mpn_sqr_basecase.
 
 dnl  Contributed to the GNU project by Torbjorn Granlund.
 
-dnl  Copyright 2008 Free Software Foundation, Inc.
+dnl  Copyright 2008, 2009 Free Software Foundation, Inc.
 
 dnl  This file is part of the GNU MP Library.
 
@@ -29,11 +29,10 @@ C   * This code only handles operands up to SQR_KARATSUBA_THRESHOLD_MAX.  That
 C     means we can safely use 32-bit operations for all sizes, unlike in e.g.,
 C     mpn_addmul_1.
 C   * The jump table could probably be optimized, at least for non-pic.
-C   * Add special code for n = 4, modify jump table code to handle that.
 C   * The special code for n=1,2,3 was quickly written.  It is probably too
 C     large and unnecessarily slow.
-C   *  Consider combining small cases code so that the n=k-1 code jumps into
-C      the middle of the n=k code.
+C   * Consider combining small cases code so that the n=k-1 code jumps into
+C     the middle of the n=k code.
 C   * Avoid saving registers for small cases code.
 C   * Needed variables:
 C    n   r11  input size
@@ -94,44 +93,22 @@ PROLOGUE(mpn_sqr_basecase)
 	mov	R32(n_param), R32(%rcx)
 	and	$3, R32(%rcx)
 	lea	4(%rcx), %rbx
-	cmp	$4, R32(n)
+	cmp	$4, R32(n_param)
 	cmovg	%rbx, %rcx
-ifelse(1,0,`
-	lea	L(jmptab)(%rip), %rdx
-	movslq	(%rdx,%rcx,4), %rcx
-	lea	0(%rip), %rax
-L(99):	add	%rax, %rcx
-	jmp	*%rcx
-	RODATA
+	lea	L(jmptab)(%rip), %rax
+	jmp	*(%rax,%rcx,8)
+	JUMPTABSECT
 	ALIGN(8)
 L(jmptab):
-	.long	L(4)-L(99)
-	.long	L(1)-L(99)
-	.long	L(2)-L(99)
-	.long	L(3)-L(99)
-	.long	L(0m4)-L(99)
-	.long	L(1m4)-L(99)
-	.long	L(2m4)-L(99)
-	.long	L(3m4)-L(99)
+	.quad	L(4)
+	.quad	L(1)
+	.quad	L(2)
+	.quad	L(3)
+	.quad	L(0m4)
+	.quad	L(1m4)
+	.quad	L(2m4)
+	.quad	L(3m4)
 	TEXT
-',`
-	lea	L(jmptab)(%rip), %rdx
-	movslq	(%rdx,%rcx,4), %rcx
-	add	%rdx, %rcx
-	jmp	*%rcx
-	RODATA
-	ALIGN(8)
-L(jmptab):
-	.long	L(4)-L(jmptab)
-	.long	L(1)-L(jmptab)
-	.long	L(2)-L(jmptab)
-	.long	L(3)-L(jmptab)
-	.long	L(0m4)-L(jmptab)
-	.long	L(1m4)-L(jmptab)
-	.long	L(2m4)-L(jmptab)
-	.long	L(3m4)-L(jmptab)
-	TEXT
-')
 
 L(1):	mov	(up), %rax
 	mul	%rax

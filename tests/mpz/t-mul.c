@@ -80,12 +80,12 @@ main (int argc, char **argv)
   rands = RANDS;
 
   extra_fft = getenv ("GMP_CHECK_FFT");
-  fft_max_2exp = 22;
+  fft_max_2exp = 0;
   if (extra_fft != NULL)
     fft_max_2exp = atoi (extra_fft);
 
-  if (fft_max_2exp == 1)	/* compat with old use of GMP_CHECK_FFT */
-    fft_max_2exp = 27;		/* default limit, good for any machine */
+  if (fft_max_2exp <= 1)	/* compat with old use of GMP_CHECK_FFT */
+    fft_max_2exp = 22;		/* default limit, good for any machine */
 
   mpz_init (bs);
   mpz_init (op1);

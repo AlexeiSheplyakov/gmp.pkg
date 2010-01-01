@@ -271,8 +271,8 @@ nodist_EXTRA_libmpn_la_SOURCES = \
   mod_1_1.c mod_1_2.c mod_1_3.c mod_1_4.c				    \
   mul.c mul_1.c mul_2.c mul_3.c mul_4.c mul_fft.c mul_n.c mul_basecase.c    \
   mul_toom22.c mul_toom32.c mul_toom42.c				    \
-  mullow_n.c mullow_basecase.c nand_n.c nior_n.c perfsqr.c popcount.c	    \
-  pre_divrem_1.c pre_mod_1.c pow_1.c random.c random2.c rshift.c   \
+  mullow_n.c mullow_basecase.c nand_n.c neg_n.c nior_n.c perfsqr.c	    \
+  popcount.c pre_divrem_1.c pre_mod_1.c pow_1.c random.c random2.c rshift.c \
   rootrem.c sb_divrem_mn.c scan0.c scan1.c set_str.c			    \
   sqr_basecase.c sqr_diagonal.c						    \
   sqrtrem.c sub.c sub_1.c sub_n.c submul_1.c				    \
@@ -282,9 +282,9 @@ noinst_LTLIBRARIES = libmpn.la
 nodist_libmpn_la_SOURCES = fib_table.c mp_bases.c
 libmpn_la_LIBADD = $(OFILES)
 libmpn_la_DEPENDENCIES = $(OFILES)
-TARG_DIST = a29k alpha arm clipper cray generic i960 ia64 lisp m68k \
-  m88k mips32 mips64 ns32k pa32 pa64 power powerpc32 powerpc64 pyr s390 sh \
-  sparc32 sparc64 thumb vax x86 x86_64 z8000 z8000x
+TARG_DIST = a29k alpha arm clipper cray generic i960 ia64 lisp m68k m88k \
+  minithres mips32 mips64 ns32k pa32 pa64 power powerpc32 powerpc64 pyr s390 \
+  sh sparc32 sparc64 thumb vax x86 x86_64 z8000 z8000x
 
 EXTRA_DIST = asm-defs.m4 cpp-ccas m4-ccas $(TARG_DIST)
 
@@ -508,6 +508,8 @@ mullow_n_.c: mullow_n.c $(ANSI2KNR)
 	$(CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) `if test -f $(srcdir)/mullow_n.c; then echo $(srcdir)/mullow_n.c; else echo mullow_n.c; fi` | sed 's/^# \([0-9]\)/#line \1/' | $(ANSI2KNR) > $@ || rm -f $@
 nand_n_.c: nand_n.c $(ANSI2KNR)
 	$(CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) `if test -f $(srcdir)/nand_n.c; then echo $(srcdir)/nand_n.c; else echo nand_n.c; fi` | sed 's/^# \([0-9]\)/#line \1/' | $(ANSI2KNR) > $@ || rm -f $@
+neg_n_.c: neg_n.c $(ANSI2KNR)
+	$(CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) `if test -f $(srcdir)/neg_n.c; then echo $(srcdir)/neg_n.c; else echo neg_n.c; fi` | sed 's/^# \([0-9]\)/#line \1/' | $(ANSI2KNR) > $@ || rm -f $@
 nior_n_.c: nior_n.c $(ANSI2KNR)
 	$(CPP) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) `if test -f $(srcdir)/nior_n.c; then echo $(srcdir)/nior_n.c; else echo nior_n.c; fi` | sed 's/^# \([0-9]\)/#line \1/' | $(ANSI2KNR) > $@ || rm -f $@
 perfsqr_.c: perfsqr.c $(ANSI2KNR)
@@ -590,20 +592,21 @@ mul_basecase_.lo mul_fft_.$(OBJEXT) mul_fft_.lo mul_n_.$(OBJEXT) \
 mul_n_.lo mul_toom22_.$(OBJEXT) mul_toom22_.lo mul_toom32_.$(OBJEXT) \
 mul_toom32_.lo mul_toom42_.$(OBJEXT) mul_toom42_.lo \
 mullow_basecase_.$(OBJEXT) mullow_basecase_.lo mullow_n_.$(OBJEXT) \
-mullow_n_.lo nand_n_.$(OBJEXT) nand_n_.lo nior_n_.$(OBJEXT) nior_n_.lo \
-perfsqr_.$(OBJEXT) perfsqr_.lo popcount_.$(OBJEXT) popcount_.lo \
-pow_1_.$(OBJEXT) pow_1_.lo pre_divrem_1_.$(OBJEXT) pre_divrem_1_.lo \
-pre_mod_1_.$(OBJEXT) pre_mod_1_.lo random_.$(OBJEXT) random_.lo \
-random2_.$(OBJEXT) random2_.lo rootrem_.$(OBJEXT) rootrem_.lo \
-rshift_.$(OBJEXT) rshift_.lo sb_divrem_mn_.$(OBJEXT) sb_divrem_mn_.lo \
-scan0_.$(OBJEXT) scan0_.lo scan1_.$(OBJEXT) scan1_.lo \
-set_str_.$(OBJEXT) set_str_.lo sqr_basecase_.$(OBJEXT) \
-sqr_basecase_.lo sqr_diagonal_.$(OBJEXT) sqr_diagonal_.lo \
-sqrtrem_.$(OBJEXT) sqrtrem_.lo sub_.$(OBJEXT) sub_.lo sub_1_.$(OBJEXT) \
-sub_1_.lo sub_n_.$(OBJEXT) sub_n_.lo submul_1_.$(OBJEXT) submul_1_.lo \
-tdiv_qr_.$(OBJEXT) tdiv_qr_.lo udiv_qrnnd_.$(OBJEXT) udiv_qrnnd_.lo \
-udiv_w_sdiv_.$(OBJEXT) udiv_w_sdiv_.lo xnor_n_.$(OBJEXT) xnor_n_.lo \
-xor_n_.$(OBJEXT) xor_n_.lo : $(ANSI2KNR)
+mullow_n_.lo nand_n_.$(OBJEXT) nand_n_.lo neg_n_.$(OBJEXT) neg_n_.lo \
+nior_n_.$(OBJEXT) nior_n_.lo perfsqr_.$(OBJEXT) perfsqr_.lo \
+popcount_.$(OBJEXT) popcount_.lo pow_1_.$(OBJEXT) pow_1_.lo \
+pre_divrem_1_.$(OBJEXT) pre_divrem_1_.lo pre_mod_1_.$(OBJEXT) \
+pre_mod_1_.lo random_.$(OBJEXT) random_.lo random2_.$(OBJEXT) \
+random2_.lo rootrem_.$(OBJEXT) rootrem_.lo rshift_.$(OBJEXT) \
+rshift_.lo sb_divrem_mn_.$(OBJEXT) sb_divrem_mn_.lo scan0_.$(OBJEXT) \
+scan0_.lo scan1_.$(OBJEXT) scan1_.lo set_str_.$(OBJEXT) set_str_.lo \
+sqr_basecase_.$(OBJEXT) sqr_basecase_.lo sqr_diagonal_.$(OBJEXT) \
+sqr_diagonal_.lo sqrtrem_.$(OBJEXT) sqrtrem_.lo sub_.$(OBJEXT) sub_.lo \
+sub_1_.$(OBJEXT) sub_1_.lo sub_n_.$(OBJEXT) sub_n_.lo \
+submul_1_.$(OBJEXT) submul_1_.lo tdiv_qr_.$(OBJEXT) tdiv_qr_.lo \
+udiv_qrnnd_.$(OBJEXT) udiv_qrnnd_.lo udiv_w_sdiv_.$(OBJEXT) \
+udiv_w_sdiv_.lo xnor_n_.$(OBJEXT) xnor_n_.lo xor_n_.$(OBJEXT) \
+xor_n_.lo : $(ANSI2KNR)
 
 mostlyclean-libtool:
 	-rm -f *.lo

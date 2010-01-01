@@ -45,8 +45,8 @@ nodist_EXTRA_libmpn_la_SOURCES =					    \
   mod_1_1.c mod_1_2.c mod_1_3.c mod_1_4.c				    \
   mul.c mul_1.c mul_2.c mul_3.c mul_4.c mul_fft.c mul_n.c mul_basecase.c    \
   mul_toom22.c mul_toom32.c mul_toom42.c				    \
-  mullow_n.c mullow_basecase.c nand_n.c nior_n.c perfsqr.c popcount.c	    \
-  pre_divrem_1.c pre_mod_1.c pow_1.c random.c random2.c rshift.c   \
+  mullow_n.c mullow_basecase.c nand_n.c neg_n.c nior_n.c perfsqr.c	    \
+  popcount.c pre_divrem_1.c pre_mod_1.c pow_1.c random.c random2.c rshift.c \
   rootrem.c sb_divrem_mn.c scan0.c scan1.c set_str.c			    \
   sqr_basecase.c sqr_diagonal.c						    \
   sqrtrem.c sub.c sub_1.c sub_n.c submul_1.c				    \
@@ -57,9 +57,9 @@ nodist_libmpn_la_SOURCES = fib_table.c mp_bases.c
 libmpn_la_LIBADD = $(OFILES)
 libmpn_la_DEPENDENCIES = $(OFILES)
 
-TARG_DIST = a29k alpha arm clipper cray generic i960 ia64 lisp m68k \
-  m88k mips32 mips64 ns32k pa32 pa64 power powerpc32 powerpc64 pyr s390 sh \
-  sparc32 sparc64 thumb vax x86 x86_64 z8000 z8000x
+TARG_DIST = a29k alpha arm clipper cray generic i960 ia64 lisp m68k m88k \
+  minithres mips32 mips64 ns32k pa32 pa64 power powerpc32 powerpc64 pyr s390 \
+  sh sparc32 sparc64 thumb vax x86 x86_64 z8000 z8000x
 
 EXTRA_DIST = asm-defs.m4 cpp-ccas m4-ccas $(TARG_DIST)
 

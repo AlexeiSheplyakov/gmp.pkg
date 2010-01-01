@@ -92,7 +92,7 @@ How to install and use the GNU multiple precision arithmetic library, version @v
 @subtitle @value{UPDATED}
 
 @author by The GMP developers
-@c @email{tege@@swox.com}
+@c @email{tege@@gmplib.org}
 
 @c Include the Distribution inside the titlepage so
 @c that headings are turned off.
@@ -5697,7 +5697,7 @@ int   n;
 gmp_printf ("fixed point mpf %.*Ff with %d digits\n", n, f, n);
 
 mp_limb_t l;
-gmp_printf ("limb %Mu\n", limb);
+gmp_printf ("limb %Mu\n", l);
 
 const mp_limb_t *ptr;
 mp_size_t       size;
@@ -8027,7 +8027,7 @@ For operands between these sizes, we use Toom inspired algorithms suggested by
 Alberto Zanoni and Marco Bodrato.  The idea is to split the operands into
 polynomials of different degree.  GMP currently splits the smaller operand
 onto 2 coefficients, i.e., a polynomial of degree 1, but the larger operand
-can be split into 2, 3, or 4 coefficients, i,e., a polynomial of degree 1 to
+can be split into 2, 3, or 4 coefficients, i.e., a polynomial of degree 1 to
 3.
 
 @c FIXME: This is mighty ugly, but a cleaner @need triggers texinfo bugs that
@@ -8417,20 +8417,20 @@ linear work is also significant. There are roughly @math{N} calls to the
 optimizations:
 
 @itemize
-@item 
+@item
 It uses the same relaxed notion of correctness as @code{mpn_hgcd} (see next
 section). This means that when called with the most significant two limbs of
 two large numbers, the returned matrix does not always correspond exactly to
 the initial quotient sequence for the two large numbers; the final quotient
 may sometimes be one off.
 
-@item 
+@item
 It takes advantage of the fact the quotients are usually small. The division
 operator is not used, since the corresponding assembler instruction is very
 slow on most architectures. (This code could probably be improved further, it
 uses many branches that are unfriendly to prediction).
 
-@item 
+@item
 It switches from double-limb calculations to single-limb calculations half-way
 through, when the input numbers have been reduced in size from two limbs to
 one and a half.
@@ -10197,11 +10197,12 @@ Paul Zimmermann wrote the REDC-based mpz_powm code, the Sch@"onhage-Strassen
 FFT multiply code, and the Karatsuba square root code.  He also improved the
 Toom3 code for GMP 4.2.  Paul sparked the development of GMP 2, with his
 comparisons between bignum packages.  The ECMNET project Paul is organizing
-was a driving force behind many of the optimizations in GMP 3.
+was a driving force behind many of the optimizations in GMP 3.  Paul also
+wrote the new GMP 4.3 nth root code (with Torbj@"orn).
 
 Ken Weber (Kent State University, Universidade Federal do Rio Grande do Sul)
 contributed @code{mpz_gcd}, @code{mpz_divexact}, @code{mpn_gcd}, and
-@code{mpn_bdivmod}, partially supported by CNPq (Brazil) grant 301314194-2.
+@code{mpn_bdivmod}, partially supported by CNPq (Brazil) grant 301314194-2.c
 
 Per Bothner of Cygnus Support helped to set up GMP to use Cygnus' configure.
 He has also made valuable suggestions and tested numerous intermediary
@@ -10249,7 +10250,13 @@ improvements.
 
 Niels M@"oller wrote the sub-quadratic GCD and extended GCD code, the
 quadratic Hensel division code, and (with Torbj@"orn) the new divide and
-conquer division code for GMP 4.3.
+conquer division code for GMP 4.3.  Niels also helped implement the new Toom
+multiply code for GMP 4.3.
+
+Alberto Zanoni and Marco Bodrato suggested the unbalanced multiply strategy,
+and found the optimal strategies for evaluation and interpolation in Toom
+multiplication.  Marco also helped implement the new Toom multiply code for
+GMP 4.3.
 
 David Harvey suggested the internal function @code{mpn_bdiv_dbm1},
 implementing division relevant to Toom multiplication.  He also worked on

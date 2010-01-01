@@ -1,4 +1,98 @@
-2009-04-14  Torbjorn Granlund  <tege@swox.com>
+2009-05-12  Torbjorn Granlund  <tege@gmplib.org>
+
+	* Version 4.3.1 released.
+
+2009-05-11  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-h.in (__GNU_MP_VERSION_MINOR): Bump.
+
+	* Makefile.am (LIBGMP_LT_*, LIBGMPXX_LT_*, LIBMP_LT_*):
+	Bump version info.
+
+2009-05-09  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tests/mpz: Add MPZ_CHECK_FORMAT to many tests.
+
+2009-05-07  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86/pentium4/sse2/mul_basecase.asm: Avoid L(ret), "ret" is
+	defined in x86-defs.m4.
+
+2009-05-06  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86/p6/aors_n.asm: Use L() for labels.
+	* mpn/x86/pentium4/sse2/addmul_1.asm: Likewise.
+	* mpn/x86/pentium4/sse2/mul_1.asm: Likewise.
+	* mpn/x86/pentium4/sse2/mul_basecase.asm: Likewise.
+	* mpn/x86/pentium4/sse2/sqr_basecase.asm: Likewise.
+	* mpn/x86_64/lshift.asm: Likewise.
+	* mpn/x86_64/rshift.asm: Likewise.
+
+	* tests/cxx/t-locale.cc (point_string): Declare as extern "C" to
+	placate compilers that mangle variable names.
+
+2009-05-04  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tests/mpz/t-gcd.c: Generate operands that are multiple of each other.
+
+2009-05-01  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-h.in (__GMP_EXTERN_INLINE): Support for more systems.
+	(gmp_randinit_set): Add missing __GMP_DECLSPEC.
+
+2009-04-28  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/neg_n.c: New file.
+	* configure.in (gmp_mpn_functions): Add neg_n.
+	* mpn/asm-defs.m4 (define_mpn): Add neg_n.
+	* mpn/Makefile.am (nodist_EXTRA_libmpn_la_SOURCES): Add neg_n.c.
+	* gmp-h.in: Handle mpn_neg_n properly.
+
+	* mpn/generic/toom_interpolate_7pts.c (divexact_2exp): Nailify.
+
+	* mpn/generic/gcdext.c: Change some MPN_NORMALIZE to
+	MPN_NORMALIZE_NOT_ZERO.
+	* mpn/generic/gcdext_lehmer.c: Likewise.
+	Add a MPN_NORMALIZE_NOT_ZERO.
+
+	* mpn/generic/binvert.c: Remove own mpn_neg_n.
+
+	* tests/mpz/t-gcd.c: Add some MPZ_CHECK_FORMAT calls.
+
+2009-04-27  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/Makefile.am (TARG_DIST): Add minithres.
+
+	* mpn/generic/bdiv_dbm1c.c: Handle nails.
+
+2009-04-26  Torbjorn Granlund  <tege@gmplib.org>
+
+	* config.guess: Recognize more POWER processor types.
+
+2009-04-25  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86/pentium4/sse2/popcount.asm: Work around Apple reloc bug.
+	* mpn/x86/darwin.m4: Define symbol "DARWIN".
+
+2009-04-19  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/powm.c (mpn_redc_n): Use ASSERT_ALWAYS, not abort().
+	* mpn/generic/powm_sec.c: Likewise.
+
+	* mpn/powerpc64/aix.m4 (EXTERN_FUNC): New define.  Add dummy variants
+	for other m4 files.
+	* mpn/powerpc64/mode64/divrem_1.asm: Use EXTERN_FUNC.
+	* mpn/powerpc64/mode64/divrem_1.asm: Likewise.
+
+2009-04-16  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86_64/x86_64-defs.m4 (JUMPTABSECT): New define.
+	* mpn/x86_64/darwin.m4: Likewise.
+	* mpn/x86_64/sqr_basecase.asm: Rework switch code using JUMPTABSECT.
+
+	* mpn/x86/x86-defs.m4 (LEA): Get SIZE arguments right.
+
+2009-04-14  Torbjorn Granlund  <tege@gmplib.org>
 
 	* Version 4.3.0 released.
 

@@ -2,7 +2,7 @@ This is ../../gmp/doc/gmp.info, produced by makeinfo version 4.8 from
 ../../gmp/doc/gmp.texi.
 
    This manual describes how to install and use the GNU multiple
-precision arithmetic library, version 4.3.0.
+precision arithmetic library, version 4.3.1.
 
    Copyright 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software
@@ -1311,11 +1311,12 @@ Scho"nhage-Strassen FFT multiply code, and the Karatsuba square root
 code.  He also improved the Toom3 code for GMP 4.2.  Paul sparked the
 development of GMP 2, with his comparisons between bignum packages.
 The ECMNET project Paul is organizing was a driving force behind many
-of the optimizations in GMP 3.
+of the optimizations in GMP 3.  Paul also wrote the new GMP 4.3 nth
+root code (with Torbjo"rn).
 
    Ken Weber (Kent State University, Universidade Federal do Rio Grande
 do Sul) contributed `mpz_gcd', `mpz_divexact', `mpn_gcd', and
-`mpn_bdivmod', partially supported by CNPq (Brazil) grant 301314194-2.
+`mpn_bdivmod', partially supported by CNPq (Brazil) grant 301314194-2.c
 
    Per Bothner of Cygnus Support helped to set up GMP to use Cygnus'
 configure.  He has also made valuable suggestions and tested numerous
@@ -1365,7 +1366,13 @@ number improvements.
 
    Niels Mo"ller wrote the sub-quadratic GCD and extended GCD code, the
 quadratic Hensel division code, and (with Torbjo"rn) the new divide and
-conquer division code for GMP 4.3.
+conquer division code for GMP 4.3.  Niels also helped implement the new
+Toom multiply code for GMP 4.3.
+
+   Alberto Zanoni and Marco Bodrato suggested the unbalanced multiply
+strategy, and found the optimal strategies for evaluation and
+interpolation in Toom multiplication.  Marco also helped implement the
+new Toom multiply code for GMP 4.3.
 
    David Harvey suggested the internal function `mpn_bdiv_dbm1',
 implementing division relevant to Toom multiplication.  He also worked
