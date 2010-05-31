@@ -1,3 +1,2363 @@
+2010-02-05  Torbjorn Granlund  <tege@gmplib.org>
+
+	* Version 5.0.1 released.
+
+	* mpn/generic/powm.c: Use rp target area for power table computation in
+	order to use less scratch.
+
+	* mpn/generic/binvert.c (mpn_binvert_itch): Enable more economical
+	mpn_mulmod_bnm1_itch call.
+
+	* mpn/generic/mu_div_qr.c: Remove always true #if.
+	* mpn/generic/mu_divappr_q.c: Likewise.
+	* mpn/generic/mu_bdiv_q.c: Likewise.
+	* mpn/generic/mu_bdiv_qr.c: Likewise.
+
+2010-02-01  Torbjorn Granlund  <tege@gmplib.org>
+
+	* Makefile.am (LIBGMP_LT_*, LIBGMPXX_LT_*, LIBMP_LT_*):
+	Bump version info.
+
+	* mpn/powerpc64/mode64/gmp-mparam.h: Remove {MUL,SQR}_FFT_TABLE2.
+	* mpn/x86/p6/gmp-mparam.h: Likewise.
+	* mpn/x86/p6/mmx/gmp-mparam.h: Likewise.
+	* mpn/generic/mul_fft.c: Don't depend on FFT_TABLE2, it was broken.
+
+2010-01-29  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/mul_fft.c (mpn_mul_fft_internal): Remove arguments n, m,
+	k and rec; add argument sqr.  Don't call mpn_mul_fft_decompose here,
+	instead do that in all callers.
+	(mpn_mul_fft): Trim allocation when squaring, and use TMP_ALLOC*, not
+	explicit alloc/free.
+	(mpn_fft_div_2exp_modF): Avoid a scalar division.
+	(mpn_fft_mul_modF_K): Replace some multiplies by K with shifting by k.
+	(mpn_fft_mul_2exp_modF): Make function more symmetrical.
+
+2010-01-27  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/mu_div_q.c (mpn_mu_div_q_itch): Rewrite.
+	* mpn/generic/mu_div_qr.c (mpn_mu_div_qr_itch): Re-enable
+	better mulmod itch estimate.
+	* mpn/generic/mu_divappr_q.c (mpn_mu_divappr_q_itch): Likewise.
+	* mpn/generic/mu_bdiv_qr.c (mpn_mu_bdiv_qr_itch): Likewise.
+	* mpn/generic/mu_bdiv_q.c (mpn_mu_bdiv_q_itch): Likewise.
+
+2010-01-27 Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/mu_div_qr.c (mpn_mu_div_qr_itch): Disabled guessed
+	estimate, enabled a conservative one.
+	* mpn/generic/mu_divappr_q.c (mpn_mu_divappr_q_itch): Likewise.
+	* mpn/generic/mu_bdiv_qr.c (mpn_mu_bdiv_qr_itch): Likewise.
+	* mpn/generic/mu_bdiv_q.c (mpn_mu_bdiv_q_itch): Likewise.
+
+2010-01-26 Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/mulmod_bnm1.c (mpn_mulmod_bnm1): Partial rewrite to
+	reduce memory usage.
+	* mpn/generic/sqrmod_bnm1.c (mpn_sqrmod_bnm1): Likewise.
+	(mpn_sqrmod_bnm1_next_size): New function.
+
+	* gmp-impl.h (mpn_mulmod_bnm1_itch): Accepts 3 parameters now.
+	(mpn_sqrmod_bnm1_itch): New inline function.
+	(mpn_sqrmod_bnm1_next_size): Declaration and mangling.
+	* mpn/generic/nussbaumer_mul.c: Use the new functions.
+
+	* mpn/generic/invertappr.c (mpn_ni_invertappr): Use new syntax for
+	mpn_mulmod_bnm1_itch.
+	* mpn/generic/mu_divappr_q.c (mpn_mu_divappr_q_itch): Likewise.
+	* mpn/generic/mu_bdiv_qr.c (mpn_mu_bdiv_qr_itch): Likewise.
+	* mpn/generic/mu_bdiv_q.c (mpn_mu_bdiv_q_itch): Likewise.
+	* mpn/generic/mu_div_qr.c (mpn_mu_div_qr_itch): Likewise.
+	* mpn/generic/binvert.c (mpn_binvert_itch): Likewise.
+	* tune/speed.h (SPEED_ROUTINE_MPN_MULMOD_BNM1_CALL): Likewise.
+	(SPEED_ROUTINE_MPN_MULMOD_BNM1_ROUNDED): Likewise.
+
+	* tests/mpn/t-sqrmod_bnm1.c, tests/mpn/t-mulmod_bnm1.c: Test
+	reduced memory usage.
+
+2010-01-25  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (INSERT_FFTTAB): New macro, like old insertion code but
+	also inserting a sentinel.
+	(fftmes): Use INSERT_FFTTAB for inserting new measurements.
+	Limit k range to best_k - 4 ... best_k + 4.
+
+2010-01-23  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-h.in (__GNU_MP_VERSION_PATCHLEVEL): Bump.
+	(__GMP_MP_RELEASE): New macro.
+
+	* mpf/div.c: Rewrite to use mpn_div_q.
+
+2010-01-21  Torbjorn Granlund  <tege@gmplib.org>
+
+	* Add FFT_TABLE3 tables for a basic set of machines.
+
+	* configure.in: Use -mtune=nocona for 64-bit pentium4.
+
+	* config.guess: Recognise many more Intel processors.
+
+	* tune/common.c: Whitespace cleanup.
+	(speed_mpn_matrix22_mul): Rewrite.
+
+2010-01-21  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/nussbaumer_mul.c (mpn_nussbaumer_mul): Take
+	advantage of new mpn_mulmod_bnm1 interface, to reduce allocation.
+
+	* tests/mpn/t-mulmod_bnm1.c (ref_mulmod_bnm1, main): Adapted to
+	mpn_mulmod_bnm1 interface change.
+
+	* mpn/generic/mulmod_bnm1.c (mpn_mulmod_bnm1): Interface change,
+	in case an + bn < rn, only write an + bn output limbs. New input
+	requirement, an + bn > rn/2.
+	* mpn/generic/sqrmod_bnm1.c (mpn_sqrmod_bnm1): Corresponding
+	changes.
+
+2010-01-19  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (fftmes): Round up initial n according to initial k.
+	Limit k to 24 in loop.  Remove an obsolete always-true condition.
+	Remove a redundant trace printout.
+
+2010-01-18  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (fftmes): New function
+	(fft): Rewrite.
+	(mpn_mul_fft_lcm): New function, copied from mpn/generic/mul_fft.c.
+	(fftfill): New function, code taken from mul_fft.c (mpn_mul_fft).
+	(cached_measure): New function.
+
+	* gmp-impl.h (struct fft_table_nk): Moved from mul_fft.c.
+	(MUL_FFT_TABLE3, SQR_FFT_TABLE3): Provide dummy versions for tuneup
+	builds.
+	(FFT_TABLE3_SIZE): Increase value for tuneup builds.
+
+	* mpn/generic/mul_fft.c: Handle a new FFT threshold table type ("3").
+	Misc cleanups to old table type code.
+
+2010-01-16  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86_64/darwin.m4: Fix typo in last change.
+
+2010-01-15  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-h.in (__GMP_EXTERN_INLINE): Remove "extern" for newer Sun C.
+
+	* gmp-impl.h (GMP_LIMB_BYTES): New define.
+
+	* mpn/x86_64/darwin.m4 (LEA): New define.
+
+	* mpn/x86/invert_limb.asm (approx_tab): Use DEF_OBJECT.
+	Rename and globalise it to work around Mac OS bug.
+
+	With Philip McLaughlin:
+	* mpn/x86_64/gcd_1.asm (ctz_table): Don't use local prefix, but
+	use DEF_OBJECT...END_OBJECT.
+	Keep stack pointer at ABI mandated alignment over call.
+
+2010-01-12  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/speed.c (routine): Remove obsolete mpn_dc_tdiv_qr and
+	mpn_dc_div_qr_n.
+	* tune/common.c (speed_mpn_dc_tdiv_qr, speed_mpn_dcpi1_div_qr_n):
+	Remove now unused functions.
+	* tune/speed.h (SPEED_ROUTINE_MPN_DC_DIVREM_N,
+	SPEED_ROUTINE_MPN_DC_DIVREM_SB, SPEED_ROUTINE_MPN_DC_TDIV_QR): Remove
+	now unused macros.
+
+	* mpn/x86_64/fat/fat_entry.asm (mpn_cpuid_available): Remove function.
+
+	* ltmain.sh: Upgrade from 1.5.24 to 2.2.6b.
+	* ylwrap: New file.
+	* .bootstrap: Remove explicit versions.
+
+	* doc/gmp.texi (Block-wise Barrett Division): New node.
+
+	* mpn/generic/powm.c: Change some #if to plain 'if' to avoid fat build
+	problems.
+
+2010-01-11  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/speed.h (SPEED_ROUTINE_MPN_PI1_DIV): Accept arguments for size
+	restrictions.
+	* tune/common.c (speed_mpn_sbpi1_div_qr, speed_mpn_dcpi1_div_qr,
+	(speed_mpn_sbpi1_divappr_q, speed_mpn_dcpi1_divappr_q): Pass size
+	limits for SPEED_ROUTINE_MPN_PI1_DIV.
+
+	* tune/speed.c (routine): Allow .r argument for mpn_sbpi1_divappr_q and
+	mpn_dcpi1_divappr_q.
+
+2010-01-08  Torbjorn Granlund  <tege@gmplib.org>
+
+	* Version 5.0.0 released.
+
+	* mpn/generic/div_q.c: Handle mpn_*_divappr_q returning high limb
+	everywhere.
+
+2010-01-07  Torbjorn Granlund  <tege@gmplib.org>
+
+	* Update MUL_FFT_TABLE2 and SQR_FFT_TABLE2 for many machines.
+
+	* mpn/generic/mu_div_q.c: Account for divisor truncation error as well
+	as mpn_mu_divappr_q's error.
+
+	* mpn/generic/mu_div_q.c: Handle mpn_preinv_mu_divappr_q returning a
+	high limb.
+
+	* tests/mpn/t-bdiv.c: Move a random call for debugability.
+	* tests/mpn/t-div.c: Likewise.
+
+	* mpn/generic/mu_divappr_q.c: Rewrite quotient round-up code.
+
+	* mpn/generic/mu_div_qr.c: Handle carry-out from a carry propagation
+	subtract.
+	* mpn/generic/mu_divappr_q.c: Likewise.
+
+	* mpn/generic/mu_divappr_q.c
+	(mpn_preinv_mu_divappr_q, mpn_mu_divappr_q): Declare dividend constant.
+	* gmp-impl.h: Likewise.
+
+	* perfpow.c (mpn_perfect_power_p): Call mpn_divexact instead of
+	mpn_bdiv_q (with too little scratch space!).
+
+	From Niels Möller:
+	* tests/mpn/t-div.c (check_one): Get rid of the poorly managed variable
+	tn.
+
+	* mpn/minithres/gmp-mparam.h: Add all lately defined thresholds.
+
+	* mpn/generic/div_q.c: Use SB division for small quotients as well as
+	small divisors.  Fix typo in itch call.
+
+2010-01-06  Niels Möller  <nisse@lysator.liu.se>
+
+	* tests/mpn/t-div.c (check_one): Checking based on multiplication,
+	refmpn_mul, rather than refmpn_tdiv_qr.
+
+2010-01-06 Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/toom8h_mul.c: Avoid overflows of mp_size_t.
+
+2010-01-06  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-h.in (__GNU_MP__): Bump.
+	(__GNU_MP_VERSION,__GNU_MP_VERSION_MINOR,__GNU_MP_VERSION_PATCHLEVEL):
+	Bump version info.
+	* mp-h.in (__GNU_MP__): Bump.
+	* Makefile.am (LIBGMP_LT_*, LIBGMPXX_LT_*, LIBMP_LT_*):
+	Bump version info.
+
+	* doc/gmp.texi: Rewrite mpn_gcdext text.  Remove some out-of-date
+	text in Algorithms chapter.
+
+	* mpn/generic/div_q.c: Properly handle np=scratch.  Fix critical typo
+	in final adjustment code.  Misc cleanups.
+
+	* mpn/generic/rootrem.c: Use mpn_div_q.
+	* mpz/tdiv_q.c: Likewise.
+
+	* tests/mpn/t-div.c: Test mpn_div_q.
+	(SIZE_LOG): Up to 17.
+
+	* mpn/generic/div_q.c: New file.
+	* configure.in (gmp_mpn_functions): Add div_q.
+
+	* mpn/generic/mu_div_q.c: Actually declare dividend constant.
+
+2010-01-04  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (fft): Separate tuning of modf and full products.
+	(struct fft_param_t): New field, mul_modf_function.
+	(tune_fft_sqr): Fix typo.
+	(tune_fft_mul, tune_fft_sqr): Initialise mul_modf_function field.
+	* tune/common.c (speed_mpn_fft_mul, speed_mpn_fft_sqr): New functions.
+
+	* tune/speed.h (SPEED_ROUTINE_MPN_MULMOD_BNM1_ROUNDED): Clean up.
+
+	* mpn/generic/mul.c: Simplify rational expression.
+
+	* gmp-impl.h: Cleanup threshold variables; remove obsolete ones and
+	make all possibly needed definitions for existing ones.
+	* tune/tuneup.c (tune_mul): Write fractions-compensated values to
+	threshold variables.
+
+2010-01-03 Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* tune/common.c, tune/speed.c, tune/speed.h: Support measuring
+	mpn_toom43_mul.
+
+	* mpn/generic/toom_interpolate_6pts.c: Small reorganisation.
+
+2010-01-03  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-impl.h (MUL_TO_MULMOD_BNM1_FOR_2NXN_THRESHOLD): Default to
+	INV_MULMOD_BNM1_THRESHOLD/2 instead.
+
+	* gmp-impl.h (INV_APPR_THRESHOLD, INV_MULMOD_BNM1_THRESHOLD): Default
+	here...
+	* mpn/generic/invert.c, mpn/generic/invertappr.c: ...not here.
+
+	* tests/mpn/t-div.c: Rewrite operand generation code.
+
+2010-01-02  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-impl.h (MUL_TO_MULMOD_BNM1_FOR_2NXN_THRESHOLD): Default to
+	INV_MULMOD_BNM1_THRESHOLD.
+
+2010-01-02  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/dcpi1_div_q.c: Handle divappr approximation problem more
+	efficiently.
+	* mpn/generic/mu_div_q.c: Likewise.
+
+	* mpn/generic/invert.c: Remove duplicated code.
+
+2010-01-01  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-impl.h (MUL_TO_MULMOD_BNM1_FOR_2NXN_THRESHOLD): Default to 0.
+
+	* mpn/generic/mu_div_qr.c: Rewrite to use mpn_mulmod_bnm1.  Clean up
+	scratch usage.  Improve itch functions.
+	* mpn/generic/mu_divappr_q.c: Likewise.
+	* mpn/generic/mu_bdiv_qr.c: Likewise.
+	* mpn/generic/mu_div_q.c: Likewise.
+
+	* mpn/generic/dcpi1_bdiv_qr.c: Add parameter ASSERTs.
+	* mpn/generic/dcpi1_bdiv_q.c: Likewise.
+
+	* tests/mpn/t-bdiv.c: Replace with unit testing code, based on t-div.c.
+	Increase COUNT to 500.
+
+	* tests/mpn/t-div.c: Avoid generating too small test operands.
+	Move SB suppression limit downwards.  Increase COUNT to 200.
+
+2009-12-31  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/tdiv_qr.c: Handle numerator/remainder overlap in MU case.
+
+	* tests/tests.h (TESTS_REPS): New macro.
+	* tests/mpz/dive.c: Use larger operands, decrease default reps, use
+	TESTS_REPS.
+	* tests/mpz/convert.c: Likewise.
+	* tests/mpz/t-sqrtrem.c: Likewise.
+	* tests/mpz/reuse: Likewise.
+	* tests/mpz/t-root.c: Likewise.
+	* tests/mpz/t-tdiv.c: Likewise.
+	* tests/mpz/t-gcd.c: Likewise.
+	* tests/mpz/t-powm.c: Likewise.
+
+2009-12-31  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/toom8_sqr.c (SQR_TOOM8_MAX): Avoid overflow.
+	* mpn/generic/toom6_sqr.c (SQR_TOOM6_MAX): Likewise.
+
+	* mpn/generic/mulmod_bnm1.c: Don't mention MISUSE any more,
+	simply consider UNLIKELY any unexpected size.
+
+2009-12-31  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (speed_mpn_sbordcpi1_div_qr): New function.
+	(tune_mu_div): Use it.
+
+2009-12-30  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (tune_mu_bdiv, tune_dc_bdiv, tune_mu_div)
+	(tune_dc_div): Clear global s.r to make speed functions do 2n/n.
+
+	* tune/speed.c (routine): New entries for mpn_mu_div_qr and
+	mpn_mupi_div_qr.  Allow .r parameter for mpn_sbpi1_div_qr,
+	mpn_dcpi1_div_qr.
+	* tune/speed.h (SPEED_ROUTINE_MPN_PI1_DIV, SPEED_ROUTINE_MPN_MU_DIV_QR)
+	(SPEED_ROUTINE_MPN_MUPI_DIV_QR): Handle .r parameter.
+
+	* tests/mpz/t-tdiv.c: Increase operands size again.
+
+	* mpn/generic/tdiv_qr.c: Attempt to choose between DC and MU cleverer.
+
+	* mpn/generic/tdiv_qr.c: Don't overwrite rp with unnecessary temporary
+	alloc.
+
+2009-12-29  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (tune_mu_div): Tune MUPI_DIV_QR_THRESHOLD.
+	* tune/speed.h (struct speed_params): Allow 3 source operands.
+	(SPEED_ROUTINE_MPN_MUPI_DIV_QR): New macro.
+	* tune/common.c (speed_mpn_mupi_div_qr): New function.
+
+	* mpn/generic/tdiv_qr.c: Call mpn_mu_div_qr.
+
+	* tests/mpz/t-tdiv.c: Use larger test operands.
+
+	* mpn/generic/mu_div_qr.c (mpn_mu_div_qr2): Remove code for dn==1.
+
+	* mpz/mul.c: Call mpn_sqr directly.  Use PTR,SIZ,ALLOC.
+
+	* tune/tuneup.c (tune_mu_div): Set min_size to 6, DC functions require
+	this.
+
+	* tests/mpn/t-div.c: Call mu_div functions with operands that generate
+	a high quotient limb.
+
+	* mpn/generic/mu_div_qr.c: Rewrite to return a high quotient limb,
+	to let dividend argument be constant, and as a general cleanup.
+	* mpn/generic/mu_divappr_q.c: Likewise.
+	* mpn/generic/mu_div_q.c: Likewise.
+	* gmp-impl.h: Update declarations of changed functions.
+
+	* mpn/generic/invertappr.c (mpn_invertappr): Allocate scratch space
+	when caller passed NULL.
+
+2009-12-28  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/toom_couple_handling.c: Prefix name with mpn_.
+	* gmp-impl.h: Likewise.
+	* mpn/generic/toom63_mul.c: Likewise.
+	* mpn/generic/toom6_sqr.c: Likewise.
+	* mpn/generic/toom6h_mul.c: Likewise.
+	* mpn/generic/toom8_sqr.c: Likewise.
+	* mpn/generic/toom8h_mul.c: Likewise.
+
+	* configure.in (gmp_mpn_functions_optional) Move "com" from here...
+	(gmp_mpn_functions): ...to here.
+	* mpn/generic/com.c: New file.
+	* (mpn_com): New name for mpn_com_n.  Make public.
+	* (mpn_neg): Analogous changes.
+
+	* tune/tuneup.c (tune_mu_div, tune_mu_bdiv): Set step_factor.
+
+	* tune/common.c, tune/speed.c, tune/speed.h: Support measuring
+	mpn_lshiftc.
+
+	* tests/devel/try.c: Test mpn_lshiftc.
+	* tests/refmpn.c (refmpn_com): New function.
+	(refmpn_lshiftc): Likewise.
+
+	* configure.in (gmp_mpn_functions_optional) Move lshiftc from here...
+	(gmp_mpn_functions): ...to here.
+	* mpn/generic/lshiftc.c: New file.
+	* mpn/x86_64/lshiftc.asm: New file.
+	* mpn/x86_64/core2/lshiftc.asm: New file.
+	* mpn/generic/mul_fft.c (mpn_lshiftc): Remove.
+
+	* mpn/x86_64/core2/lshift.asm: Tweak for better Core iN performance.
+	* mpn/x86_64/core2/rshift.asm: Likewise.
+
+2009-12-27  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/mul.c: Use toom6h and toom8h for almost balanced.
+
+	* mpn/generic/mullo_n.c (mpn_dc_mullo_n): New ratio, to be used in
+	Toom-8 range.
+
+2009-12-27  Torbjorn Granlund  <tege@gmplib.org>
+
+	* (mpn_sqr): New name for mpn_sqr_n.  Many files affected.
+
+	* tune/tuneup.c (tune_mullo): Up step_factor for MULLO_MUL_N_THRESHOLD.
+	(tune_invertappr, tune_invert, tune_binvert): Let max_size default.
+
+	* tune/tuneup.c (tune_mu_div, tune_mu_bdiv) New functions.
+	* tune/speed.h (SPEED_ROUTINE_MPN_MU_DIV_Q): New macro.
+	(SPEED_ROUTINE_MPN_MU_DIV_QR): Likewise.
+	(SPEED_ROUTINE_MPN_MU_BDIV_Q): Likewise.
+	(SPEED_ROUTINE_MPN_MU_BDIV_QR): Likewise.
+	* tune/Makefile.am (TUNE_MPN_SRCS_BASIC): Add bdiv_q.c and bdiv_qr.c.
+	* tune/common.c (speed_mpn_mu_div_qr): New function.
+	(speed_mpn_mu_divappr_q): Likewise.
+	(speed_mpn_mu_div_q): Likewise.
+	(speed_mpn_mu_bdiv_q): Likewise.
+	(speed_mpn_mu_bdiv_qr): Likewise.
+
+	* mpn/*/gmp-mparam.h: Fix incorrect MOD_1U_TO_MOD_1_1_THRESHOLD 0
+	values.
+
+	* gmp-impl.h (MODEXACT_1_ODD_THRESHOLD): Remove.
+	(BMOD_1_TO_MOD_1_THRESHOLD): New parameter, with the reverse meaning of
+	MODEXACT_1_ODD_THRESHOLD.
+	(MPN_MOD_OR_MODEXACT_1_ODD): Use BMOD_1_TO_MOD_1_THRESHOLD.
+	* mpn/generic/divis.c, mpz/{cong.c,cong_ui.c,divis_ui.c}: Likewise.
+	* tune/tuneup.c (tune_modexact_1_odd): Tune BMOD_1_TO_MOD_1_THRESHOLD;
+	Do not assume native mpn_modexact_1_odd is faster than mpn_mod_1.
+	(tuned_speed_mpn_mod_1): Remove variable.
+	(tune_mod_1): Fix thinkos.  Suppress printing of "always" etc.
+	(all): Measure for divrem_1, mod_1, divexact_1, etc first, since Toom
+	depends on some of them.
+
+	* mpn/generic/toom22_mul.c (TOOM22_MUL_REC): New name for
+	TOOM22_MUL_MN_REC.
+
+2009-12-26  Niels Möller  <nisse@lysator.liu.se>
+
+	* tests/mpn/t-toom32.c (MIN_AN, MIN_BN, MAX_BN): Relax
+	requirements a bit.
+
+	* mpn/generic/toom32_mul.c (mpn_toom32_mul): Relax requirement on
+	input sizes, to support s+t>=n (used to be s+t>=n+2). Keep high
+	limbs of the evaluated values in scalar variables.
+
+	* mpn/generic/sbpi1_divappr_q.c (mpn_sbpi1_divappr_q): Remove
+	unused variables.
+
+	* mpn/generic/toom32_mul.c (mpn_toom32_mul): Fixed left-over use
+	of mpn_addsub_n which should be mpn_add_n_sub_n.
+
+2009-12-26  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* tune/Makefile.am (TUNE_MPN_SRCS_BASIC): Add new toom files (spotted by Torbjorn).
+
+	* gmp-impl.h (mpn_toom6_sqr_itch): Rename to mpn_toom6_mul_n_itch and redefine.
+	(mpn_toom8_sqr_itch): Rename to mpn_toom8_mul_n_itch and redefine.
+	* mpn/generic/mul_n.c: Use renamed _itch macros.
+
+2009-12-25  Niels Möller  <nisse@lysator.liu.se>
+
+	* tests/mpn/t-toom32.c (MIN_AN, MIN_BN, MAX_BN): Tightened requirements.
+	* gmp-impl.h (mpn_toom32_mul_itch): Updated. Less scratch needed
+	by toom32 itself, and also the pointwise multiplications are
+	currently mpn_mul_n with no supplied scratch.
+	* mpn/generic/toom32_mul.c (mpn_toom32_mul): Reorganized
+	interpolation to use less scratch space. No longer supports the
+	most extreme size ratios.
+
+2009-12-25  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (tune_preinv_mod_1): Purge.
+	(tune_mod_1): Use speed_mpn_mod_1_tune for
+	PREINV_MOD_1_TO_MOD_1_THRESHOLD
+
+	* mpn/generic/dcpi1_divappr_q.c: Handle 2n/n properly.  Don't use full
+	precision in mpn_sbpi1_divappr_q call.  Misc cleanup.
+
+	* tune/tuneup.c (tune_mod_1): Add a check_size for
+	PREINV_MOD_1_TO_MOD_1_THRESHOLD.
+
+2009-12-24  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/mod_1_div.c (MOD_1N_TO_MOD_1_1_THRESHOLD,
+	(MOD_1U_TO_MOD_1_1_THRESHOLD): Set.
+	* tune/mod_1_inv.c (MOD_1N_TO_MOD_1_1_THRESHOLD,
+	(MOD_1U_TO_MOD_1_1_THRESHOLD): Set.
+
+	* gmp-impl.h (USE_PREINV_MOD_1): Remove.
+	(MPN_MOD_OR_PREINV_MOD_1): Define to choose functions dynamically in
+	terms of PREINV_MOD_1_TO_MOD_1_THRESHOLD (used to choose statically
+	using USE_PREINV_MOD_1).
+	* mpn/generic/perfsqr.c (PERFSQR_MOD_PP): Corresponding updates.
+
+	* tune/tuneup.c (tune_mod_1): Rewrite.
+	* gmp-impl.h (MOD_1N_TO_MOD_1_1_THRESHOLD): New.
+	(MOD_1U_TO_MOD_1_1_THRESHOLD): New name for MOD_1_1_THRESHOLD.
+	(MOD_1_1_TO_MOD_1_2_THRESHOLD): Mew name for MOD_1_2_THRESHOLD.
+	(MOD_1_2_TO_MOD_1_4_THRESHOLD): New name for MOD_1_4_THRESHOLD.
+	* mpn/generic/mod_1.c: Corresponding updates.
+
+2009-12-24  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/mul_n.c: Use also toom6h and toom8h.
+	* mpn/generic/sqr_n.c: Use also toom6 and toom8.
+	* gmp-impl.h: Initial support for tuning of Toom-6half and Toom-8half.
+	* tune/tuneup.c: Tune Toom-6half and Toom-8half thresholds.
+
+2009-12-24  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/mod_1_4.c: Get ASSERT right.
+	* mpn/generic/mod_1_3.c: Likewise.
+	* mpn/generic/mod_1_2.c: Likewise.
+
+	* mpn/generic/powm_sec.c: Use SQR_TOOM2_THRESHOLD as limit for a native
+	mpn_sqr_basecase, not TUNE_SQR_TOOM2_MAX.
+
+2009-12-23  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* tune/common.c, tune/speed.c, tune/speed.h: Support for measuring
+	mpn_toom8h_mul and mpn_toom8_sqr speed.
+
+	* mpn/generic/toom_eval_pm2exp.c: Fix ASSERTs.
+
+	* mpn/generic/toom8h_mul.c: New file.
+	* mpn/generic/toom8_sqr.c: New file.
+	* mpn/generic/toom_interpolate_16pts.c: New file.
+	* gmp-impl.h: Provide corresponding declarations.
+	* configure.in (gmp_mpn_functions): List toom_interpolate_16pts,
+	toom8h_mul, and toom8h_sqr.
+	* tests/mpn/t-toom8h.c: New test program.
+
+	* mpn/generic/toom6_sqr.c: New file, was part of toom6h_mul.
+	* mpn/generic/toom6h_mul.c: Removed _sqr.
+
+	* mpn/generic/mulmod_bnm1.c: Nailify CRT.
+	* mpn/generic/sqrmod_bnm1.c: Likewise.
+
+	* mpn/generic/mullo_n.c: Split dc_mullo_n function;
+	ALLOC memory at once.
+
+	* mpn/Makefile.am (nodist_EXTRA_libmpn_la_SOURCES): Update.
+
+	* mpn/generic/toom6h_mul.c: Add prefix to toom_interpolate_12pts.
+	* mpn/generic/toom_interpolate_12pts.c: Likewise.
+
+	* mpn/generic/invertappr.c (mpn_bc_invertappr): Use mpn_divrem_2.
+	* mpn/generic/invert.c: Faster basecase, use mpn_sbpi1_div_q.
+
+	* mpn/generic/toom_eval_pm2exp.c: Assert support for degree 3.
+	* mpn/generic/toom6h_mul.c: Avoid obsolete _itch function.
+
+2009-12-23  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/common.c, tune/speed.c, tune/speed.h: Support for measuring
+	mpn_mod_1_1p, mpn_mod_1s_2p, mpn_mod_1s_3p, mpn_mod_1s_4p.
+
+	* tests/mpz/t-powm.c: Test mpz_powm_sec.
+
+	* mpz/powm_sec.c: New file.
+	* gmp-h.in: Declare it.
+	* Makefile.am, mpz/Makefile.am: Compile it.
+	* doc/gmp.texi: Document it.
+
+	* mpn/generic/powm_sec.c (mpn_powm_sec_itch): New function.
+	(mpn_powm_sec): Use passed scratch, no local allocation.
+	Allow exp argument = 1.
+	(win_size): Start loop from 1.
+
+	* mpn/generic/powm.c (win_size): Start loop from 1.
+
+2009-12-22  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tests/mpn/t-div.c: New file.
+	* tests/mpn/Makefile.am: Compile it.
+
+	* mpn/generic/mu_divappr_q.c: Handle quotient overflow.
+
+	* mpn/generic/mu_div_q.c (mpn_mu_div_q_itch): New function.
+
+2009-12-22  Niels Möller  <<nisse@lysator.liu.se>>
+
+	* mpn/generic/sbpi1_div_q.c: Use udiv_qr_3by2.  Intended to change
+	nothing after preprocessing.
+
+	* mpn/generic/sbpi1_divappr_q.c: For the last call to udiv_qr_3by2,
+	avoid using memory locations as output parameters, and revert to
+	explicitly copying n1 and n0 to memory.
+
+	* gmp-impl.h (udiv_qr_3by2): Tweaked to expand to precisely the
+	same code as was used before the introduction of this macro.
+	Eliminated some local variables, instead do multiple updates to
+	the output parameters.
+
+2009-12-22  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tests/mpn/t-toom6h.c (MIN_AN): Set to MUL_TOOM6H_THRESHOLD to avoid
+	invalid recursive sizes.
+
+	* tests/mpn/t-bdiv.c: Get itch function calls right.
+
+	* mpn/generic/mu_bdiv_q.c (mpn_mu_bdiv_q_itch): Rewrite.
+	* mpn/generic/mu_bdiv_qr.c (mpn_mu_bdiv_qr_itch): Simplify.
+
+	* mpn/generic/bdiv_qr.c (mpn_bdiv_qr): Simplify, don't allocate.
+	(mpn_bdiv_qr_itch): Conditionalise on MU_BDIV_QR_THRESHOLD.
+
+2009-12-18  Niels Möller  <nisse@lysator.liu.se>
+
+	* tests/mpn/t-bdiv.c: Add red-zones.
+
+2009-12-21  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/sbpi1_div_q.c: Fix fixup code to work for qn = 0.
+
+	* mpn/generic/dcpi1_divappr_q.c: Handle qn = 1 and qn = 2 for initial
+	quotient block (code block copied from dcpi1_div_qr.c).
+
+	* mpn/generic/dcpi1_div_qr.c: Rewrite singular case giving q limb of
+	GMP_NUMB_MAX.  Remove an impossible qn = 0 case.
+
+	* mpn/generic/dcpi1_bdiv_q.c: Remove a spurious mpn_sub_1.
+
+	* mpn/generic/mul.c: Put back call to mpn_mul_n.
+
+	* tune/tuneup.c (all): Call tune_mulmod_bnm1 before tuning fft due to
+	dependency on mulmod_bnm1 from both mul_fft_mul and from mullo_n.
+
+	* mpn/generic/dcpi1_divappr_q.c: ASSERT that dn >= 6 and nn > dn.
+	* mpn/generic/dcpi1_div_q.c: ASSERT that dn >= 6 and nn-dn >= 3.
+	* mpn/generic/dcpi1_div_qr.c: ASSERT that dn >= 6 and nn-dn >= 3.
+
+	* mpn/generic/bdiv_q_1.c (mpn_pi1_bdiv_q_1): Renamed from
+	mpn_bdiv_q_1_pi1.
+	* All references changed.
+
+	* configure.in: Add --enable-old-fft-full.
+	* tune/speed.c (routine): Conditionalise mpn_mul_fft_full references on
+	WANT_OLD_FFT_FULL.
+	* tune/common.c (speed_mpn_mul_fft_full)
+	(speed_mpn_mul_fft_full_sqr): Likewise.
+	* mpn/generic/mul_fft.c (mpn_mul_fft_full): Include iff
+	WANT_OLD_FFT_FULL.
+
+2009-12-21  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* gmp-impl.h (mpn_toom6h_mul_itch): New inline function.
+	(MUL_TOOM6H_THRESHOLD): Default value.
+	(SQR_TOOM6_THRESHOLD): Default value.
+	* mpn/generic/toom6h_mul.c: Remove definitions moved to gmp-impl.h.
+	* tune/common.c, tune/speed.c, tune/speed.h: Support for measuring
+	mpn_toom6h_mul and mpn_toom6_sqr speed.
+
+	* mpn/generic/toom63_mul.c: Remove unused TMP_*.
+
+	* mpn/generic/toom_eval_pm2rexp.c: New file.
+	* gmp-impl.h: Provide corresponding declaration.
+	* configure.in (gmp_mpn_functions): List toom_eval_pm2rexp.
+	* mpn/generic/toom6h_mul.c: Use shared toom_eval_pm2rexp.
+
+	* mpn/generic/toom_couple_handling.c: New file, helper function
+	for high degree Toom.
+	* gmp-impl.h: Provide corresponding declaration.
+	* configure.in (gmp_mpn_functions): List toom_couple_handling.
+	* mpn/generic/toom6h_mul.c: Use shared toom_couple_handling.
+	* mpn/generic/toom63_mul.c: Likewise.
+
+	* mpn/generic/toom6h_mul.c: New file.
+	* mpn/generic/toom_interpolate_12pts.c: New file.
+	* gmp-impl.h: Provide corresponding declarations.
+	* configure.in (gmp_mpn_functions): List toom_interpolate_12pts,
+	toom6h_mul.
+	* tests/mpn/t-toom6h.c: New test program.
+
+	* tests/mpn/t-mulmod_bnm1.c (ref_mulmod_bnm1): Use ref_mul.
+	* tests/mpn/t-sqrmod_bnm1.c (ref_sqrmod_bnm1): Likewise.
+
+2009-12-20  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/mulmod_bnm1.c (mpn_mulmod_bnm1): New CRT.
+	* mpn/generic/sqrmod_bnm1.c (mpn_sqrmod_bnm1): Likewise.
+
+2009-12-20  Torbjorn Granlund  <tege@gmplib.org>
+
+	* Change all bit counts for bignums to use mp_bitcnt_t.
+
+	* mpn/generic/bdivmod.c: File removed.  All references purged.
+
+	* mpn/generic/mul_fft.c (mpn_mul_fft_full): Disable.
+
+	* gmp-impl.h: Define mpn_fft_mul as an alias for mpn_nussbaumer_mul.
+	* mpn/generic/mul.c: Refer mpn_fft_mul.
+	* mpn/generic/mul_n.c: Likewise.
+	* mpn/generic/sqr_n.c: Likewise.
+	* mpn/generic/mullo_n.c: Likewise.
+
+	* mpn/generic/mul.c: Loop also over mpn_nussbaumer_mul, as suggested by
+	Marco.  Use TMP_SALLOC_LIMBS in more places.  Clean up ws allocation.
+
+2009-12-19  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/toom_interpolate_8pts.c: Nailify.
+
+2009-12-19  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/mul.c: Major rewrite.  Use toom43, toom53, toom63.
+	Call mpn_nussbaumer_mul for largest operands.
+
+	* tune/speed.h (SPEED_ROUTINE_MPN_TOOM32_FOR_TOOM43_MUL): New macro.
+	(SPEED_ROUTINE_MPN_TOOM43_FOR_TOOM32_MUL): New macro.
+	(SPEED_ROUTINE_MPN_TOOM32_FOR_TOOM53_MUL): New macro.
+	(SPEED_ROUTINE_MPN_TOOM53_FOR_TOOM32_MUL): New macro.
+	(SPEED_ROUTINE_MPN_TOOM42_FOR_TOOM53_MUL): New macro.
+	(SPEED_ROUTINE_MPN_TOOM53_FOR_TOOM42_MUL): New macro.
+	* tune/common.c (speed_mpn_toom63_mul): New function.
+	(speed_mpn_toom32_for_toom43_mul): New function.
+	(speed_mpn_toom43_for_toom32_mul): New function.
+	(speed_mpn_toom32_for_toom53_mul): New function.
+	(speed_mpn_toom53_for_toom32_mul): New function.
+	(speed_mpn_toom42_for_toom53_mul): New function.
+	(speed_mpn_toom53_for_toom42_mul): New function.
+	* tune/tuneup.c (tune_mul_n): New name for old tune_mul.
+	(tune_sqr_n): New name for old tune_sqr.
+	(tune_mul): New function, for unbalanced multiplication.
+	* gmp-impl.h: Provide declarations for corresponding threshold vars.
+
+	* gmp-impl.h (mpn_rsh1add_nc, mpn_rsh1sub_nc): Declare.
+	* mpn/asm-defs.m4: Likewise.
+	* configure.in: Add corresponding HAVE_NATIVEs.
+	* mpn/x86_64/rsh1aors_n.asm: Add _nc entry point.
+
+2009-12-18  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpz/divexact.c: Rewrite to use mpn_divexact.
+
+	* mpn/generic/bdiv_q_1.c (mpn_bdiv_q_1): Deleted some unused
+	variables.
+
+	* mpn/generic/toom52_mul.c (mpn_toom52_mul)
+	[HAVE_NATIVE_mpn_add_n_sub_n]: Moved declaration of cy to avoid a
+	compiler warning.
+
+	* gmp-impl.h (gmp_pi1_t): Eliminated inv21 member.
+	(invert_pi1): ...and don't store it here.
+
+	* mpn/generic/toom63_mul.c (mpn_toom63_mul): Simplified
+	calculation of block size n.
+	* gmp-impl.h (mpn_toom63_mul_itch): Likewise.
+
+	* mpn/generic/toom_eval_pm2exp.c (mpn_toom_eval_pm2exp): Fixed
+	output asserts.
+
+2009-12-18  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tests/mpn/t-toom63.c: New test program.
+
+2009-12-18  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/invert.c: Nailify.
+	* mpn/generic/invertappr.c: Nailify.
+	* mpn/generic/mulmod_bnm1.c: Nailify.
+	* mpn/generic/sqrmod_bnm1.c: Nailify.
+
+	* tests/mpn/t-invert.c: New test program.
+
+	* mpn/generic/toom63_mul.c: New file.
+	* mpn/generic/toom_interpolate_8pts.c: New file.
+	* gmp-impl.h: Provide corresponding declarations.
+	* configure.in (gmp_mpn_functions): List toom_interpolate_8pts and
+	toom63_mul.
+
+2009-12-17  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/mul.c: Move allocation of ws to where it is used.
+	Identify toom22, 32, 42, in that order (in two places).  Use midline
+	between toom22, 32, 42.
+	* mpn/generic/toom22_mul.c (TOOM22_MUL_MN_REC): Call also
+	mpn_toom32_mul.
+
+	* doc/gmp.texi: Update References section.  Update Contributors
+	section.  Misc updates.
+
+	* gmp-impl.h: Renew default values for all THRESHOLDs.
+
+2009-12-17  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/divexact.c (mpn_divexact): Don't require that the
+	dividend is normalized. Use MPN_DIVREM_OR_PREINV_DIVREM_1. When
+	shifting, allocate and process only the low qn+1 limbs. Eliminated
+	code for the impossible case nn < qn.
+
+	* mpn/generic/dcpi1_div_qr.c (mpn_dcpi1_div_qr): Added some input
+	asserts.
+
+	* mpn/generic/dcpi1_div_qr.c (mpn_dcpi1_div_qr): In the case that
+	the initial quotient block is a single limb, use 3/2 division,
+	thereby eliminating the only use of gmp_pi1_t->inv21.
+
+2009-12-17  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/invert.c: Added some comment.
+	* mpn/generic/invertappr.c: Slightly better threshold handling.
+	* gmp-impl.h (INV_NEWTON_THRESHOLD): Default to 200.
+
+	* mpn/generic/nussbaumer_mul.c: New file.
+	* configure.in (gmp_mpn_functions): Add nussbaumer_mul.
+	* tune/Makefile.am (TUNE_MPN_SRCS_BASIC): Add nussbaumer_mul.
+	* gmp-impl.h (mpn_nussbaumer_mul): Added prototype and name-mangling.
+	* tune/speed.h (speed_mpn_nussbaumer_mul): Declare function.
+	* tune/common.c (speed_mpn_nussbaumer_mul): New function.
+	* tune/speed.c (routine): Add speed_mpn_nussbaumer_mul.
+
+	* mpn/generic/sqrmod_bnm1.c: New file.
+	* configure.in (gmp_mpn_functions): Add sqrmod_bnm1.
+	* tune/Makefile.am (TUNE_MPN_SRCS_BASIC): Add sqrmod_bnm1.
+	* gmp-impl.h (mpn_sqrmod_bnm1): Added prototype and name-mangling.
+	(SQRMOD_BNM1_THRESHOLD): support for the new threshold.
+	* tune/speed.h (speed_mpn_sqrmod_bnm1): Declare function.
+	* tune/common.c (speed_mpn_sqrmod_bnm1): New function.
+	* tune/speed.c (routine): Add speed_mpn_sqrmod_bnm1.
+	* tests/mpn/t-mulmod_bnm1.c: Attribution.
+	* tests/mpn/t-sqrmod_bnm1.c: New test file.
+	* tests/mpn/Makefile.am (check_PROGRAMS): Add t-sqrmod_bnm1.
+
+	* tune/tuneup.c: Tune SQRMOD_BNM1_THRESHOLD.
+
+	* mpn/generic/nussbaumer_mul.c (mpn_nussbaumer_mul): Mimic fft_mul,
+	use squaring if operands coincide.
+	* tune/speed.h (speed_mpn_nussbaumer_mul_sqr): Declare function.
+	* tune/common.c (speed_mpn_nussbaumer_mul_sqr): New function.
+	* tune/speed.c (routine): Add speed_mpn_nussbaumer_mul_sqr.
+
+2009-12-17  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/bdiv_q.c (mpn_bdiv_q_itch): Rewrite.
+
+2009-12-16  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tests/mpn/t-bdiv.c (bdiv_q_valid_p, bdiv_qr_valid_p): Call refmpn_mul
+	instead of refmpn_mul_basecase.
+	* tests/mpn/toom-shared.h: Likewise.
+	* tests/refmpn.c (refmpn_mullo_n,refmpn_sqr,refmpn_mul_any): Likewise.
+
+	* minithres/gmp-mparam.h: Add new thresholds, trim old values.
+
+	* mpn/generic/powm.c: Use mp_bitcnt_t for bit counts.
+	Handle REDC_1_TO_REDC_N_THRESHOLD < MUL_TOOM22_THRESHOLD in
+	non-WANT_REDC_2 INNERLOOP expansion code.
+	* mpn/generic/powm_sec.c: Use mp_bitcnt_t for bit counts.
+
+2009-12-16  Niels Möller  <nisse@lysator.liu.se>
+
+	* tests/mpz/t-gcd.c (main): Added test case to exercise the
+	unlikely u0 == u1 case in mpn_gcdext_lehmer_n.
+
+	* mpn/generic/gcdext_lehmer.c (mpn_gcdext_lehmer_n): Get ASSERT
+	right.
+
+2009-12-16  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tests/mpz/t-mul.c: Misc cleanups.
+	(mul_basecase): Remove.
+	(ref_mpn_mul): Remove.
+	* tests/refmpn.c (refmpn_mul): New function, mainly from t-mul.c's
+	ref_mpn_mul.
+	(refmpn_mullo_n): Add a missing free.
+
+	* tune/speed.c (routine): Measure speed_mpn_{sb,dc}pi1_div_qr,
+	mpn_{sb,dc}pi1_divappr_q, mpn_{sb,dc}pi1_bdiv_qr, and
+	mpn_{sb,dc}pi1_bdiv_q.
+
+	* mpn/generic/invertappr.c: New file, meat from invert.c.
+	* mpn/generic/invert.c: Leave just mpn_invert.c.
+	* configure.in (gmp_mpn_functions): Add invertappr.
+	* tune/Makefile.am (TUNE_MPN_SRCS_BASIC): Add invertappr.c.
+	* gmp-impl.h (mpn_invert_itch, mpn_invertappr_itch): New macros.
+
+2009-12-15  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/gcdext_subdiv_step.c: Get an ASSERT right.
+
+2009-12-15  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/sbpi1_div_qr.c (mpn_sbpi1_div_qr): A very small step
+	towards nail support.
+
+2009-12-15  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* gmp-impl.h (mpn_ni_invertappr): Added prototype and name-mangling.
+	* mpn/generic/mulmod_bnm1.c: Comment representation of class [0].
+
+2009-12-14  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/sbpi1_divappr_q.c (mpn_sbpi1_divappr_q): Use
+	udiv_qr_3by2.
+
+2009-12-14  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (tune_binvert): Remove BINV_MULMOD_BNM1_THRESHOLD
+	tuning, it was always zero and caused BINV_NEWTON_THRESHOLD to be
+	wrong (as pointed out by Marco).
+	* (BINV_MULMOD_BNM1_THRESHOLD): Clean from other files too.
+
+2009-12-14  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/invert.c: Improved comments.
+	(mpn_bc_invertappr): Conditionally re-enable mpn_dcpi1_divappr_q.
+
+2009-12-14  Niels Möller  <nisse@lysator.liu.se>
+
+	* gmp-impl.h (udiv_qr_3by2): Fix typo in argument list.
+
+2009-12-13  Niels Möller  <nisse@lysator.liu.se>
+
+	* gmp-impl.h (udiv_qr_3by2): New macro.
+	* mpn/generic/sbpi1_div_qr.c (mpn_sbpi1_div_qr): Use udiv_qr_3by2.
+
+2009-12-13  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/dcpi1_divappr_q.c (mpn_dcpi1_divappr_q): Avoid a buffer
+	overrun.
+
+	* mpn/generic/mul_fft.c (mpn_mul_fft_full): Handle carry-out from 2nd
+	mpn_mul_fft, add an ASSERT for the 1st mpn_mul_fft.  Replace some
+	comments on cc's range with ASSERTs.
+
+	* mpn/generic/gcdext.c (compute_v): Normalise tp[] after mpn_mul.
+
+	* mpz/powm.c: Rework buffer handling.
+
+2009-12-13  Niels Möller  <nisse@lysator.liu.se>
+
+	* tests/mpn/toom-shared.h (main): Use refmpn_mul_basecase to check
+	results (slow!). Iteration counts of all toom tests reduced
+	considerably.
+
+2009-12-13  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/invert.c (mpn_invertapp): Split in _bc and _ni.
+	(mpn_bc_invertappr): New function, the basecase.
+	(mpn_ni_invertapp): New function, Newton iteration.
+	(mpn_invert): Use mpn_ni_invertapp.
+	* tune/tuneup.c (tune_invert): Min for INV_APPR_THRESHOLD.
+	(tune_invertappr): Min for INV_NEWTON_THRESHOLD.
+
+	* tune/speed.h (SPEED_ROUTINE_MPN_NI_INVERTAPPR): New macro.
+	(speed_mpn_ni_invertappr): Declare function.
+	* tune/common.c (speed_mpn_ni_invertappr): New function.
+	* tune/speed.c (routine): Add speed_mpn_ni_invertappr.
+
+	* tune/tuneup.c (tune_invertappr): Use speed_mpn_ni_invertappr to
+	tune INV_MULMOD_BNM1_THRESHOLD.
+
+2009-12-12  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/mu_bdiv_qr.c (mpn_mu_bdiv_qr_itch): Rewrite.
+
+2009-12-12  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* tests/mpn/t-mulmod_bnm1.c (main): Disable B^n+1 stressing test
+	for odd sizes.
+
+	* mpn/generic/invert.c: Complete rewrite. Uses Newton iterations.
+	* gmp-impl.h (mpn_invertappr): Added prototype and name-mangling.
+	(mpn_invertappr_itch): Added prototype and name-mangling.
+	(INV_APPR_THRESHOLD): Support for a new tunable const.
+	* tune/speed.h (SPEED_ROUTINE_MPN_INVERTAPPR): New macro.
+	(speed_mpn_invertappr): Declare function.
+	* tune/common.c (speed_mpn_invertappr): New function.
+	* tune/speed.c (routine): Add speed_mpn_invertappr.
+	* tune/tuneup.c (tune_invertappr): New function: was tune_invert.
+	(tune_invert): Now tune only INV_APPR_THRESHOLD.
+	(all): Enable call to tune_invert and tune_invertappr.
+
+2009-12-11  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/binvert.c: Use mpn_mulmod_bnm1 instead of FFT wrapping.
+	Old, evidently broken wrapping code removed.
+	* tune/tuneup.c (tune_binvert): Tune BINV_MULMOD_BNM1_THRESHOLD.
+	* gmp-impl.h: Provide declarations for corresponding threshold var.
+
+	* tests/mpn/t-bdiv.c (COUNT): Decrease to keep run time reasonable.
+
+	* tune/tuneup.c (tune_invert): Tune INV_MULMOD_BNM1_THRESHOLD.
+	* gmp-impl.h: Provide declarations for corresponding threshold var.
+
+	* tests/mpn/t-mulmod_bnm1.c: Avoid a division by zero.
+
+	* configure.in: Set up different paths for different 64-bit sparc
+	processors.
+	* mpn/sparc64/ultrasparc34/gmp-mparam.h: New file.
+
+2009-12-10  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/*/gmp-mparam.h: Regenerate many of these files.
+
+2009-12-10  Niels Möller  <nisse@lysator.liu.se>
+
+	* gmp-impl.h (mpn_divexact): Removed scratch pointer from
+	prototype.
+	* mpn/generic/gcdext.c (divexact): Deleted, moved to...
+	* mpn/generic/divexact.c (mpn_divexact): New implementation (moved
+	from gcdext.c). The bidirectional divexact is kept but #if:ed out.
+	Interface change, since the new code doesn't take a scratch
+	argument.
+
+	* tests/mpn/t-mulmod_bnm1.c (main): Ensure that an >= bn. Lowered
+	MIN_N to 1. Various fixes to handle n == 1 properly.
+
+	* mpn/generic/mulmod_bnm1.c (mpn_mulmod_bnm1): Small interface
+	change, require an >= bn.
+
+	* mpn/generic/mulmod_bnm1.c (mpn_mulmod_bnm1): Fixed non-recursive
+	case to not write beyond end of result area.
+
+2009-12-09  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/speed.h (SPEED_ROUTINE_MPN_MULMOD_BNM1_CALL): New macro, made
+	from now deleted SPEED_ROUTINE_MPN_MULMOD_BNM1.
+	* tune/common.c (speed_mpn_bc_mulmod_bnm1): New function.
+	(speed_mpn_mulmod_bnm1): Use SPEED_ROUTINE_MPN_MULMOD_BNM1_CALL.
+	* tune/speed.c (routine): Add mpn_bc_mulmod_bnm1.
+
+	* mpn/generic/mulmod_bnm1.c (mpn_mulmod_bnm1_next_size): Rewrite.
+
+	* tune/tuneup.c (tune_mulmod_bnm1): Rewrite.
+
+2009-12-08  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/mulmod_bnm1.c (mpn_bc_mulmod_bnm1,
+	mpn_bc_mulmod_bnp1): Added a parameter for scratch area, possibly
+	same as result area (as suggested by Niels Möller).
+	(mpn_mulmod_bnm1): Calls changed accordingly.
+
+2009-12-08  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/gcdext_1.c (mpn_gcdext_1) [GCDEXT_1_USE_BINARY]: Use
+	table lookup for count_trailing_zeros. Binary algorithm still
+	disabled by default.
+
+	* mpn/generic/gcdext.c (divexact): Local definition of divexact,
+	using mpn_bdiv_q.
+	(compute_v): Use it.
+
+	* tests/mpn/Makefile.am (check_PROGRAMS): Added t-bdiv.
+
+	* tests/mpn/t-bdiv.c: New file.
+
+	* mpn/generic/bdiv_q.c (mpn_bdiv_q): Fixed bad quotient length,
+	should have qn == nn.
+
+	* mpn/generic/bdiv_qr.c (mpn_bdiv_qr): Pass correct nn length to
+	the lower-level functions.
+
+2009-12-08  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/speed.h (SPEED_ROUTINE_MPN_MULMOD_BNM1_ROUNDED): New define.
+	* tune/common.c (speed_mpn_mulmod_bnm1_rounded): New function.
+	* tune/speed.c (routine): Add mpn_mulmod_bnm1_rounded for measuring
+	mpn_mulmod_bnm1 at recommended sizes.
+
+	* mpn/generic/mulmod_bnm1.c (mpn_mulmod_bnm1_next_size): Rewrite.
+	(mpn_bc_mulmod_bnm1): Use mpn_add_n instead of mpn_add.
+
+	* tune/speed.c (routine): Add mpn_invert.
+
+	* tune/tuneup.c (tune_invert): New function.
+	* tune/speed.h (SPEED_ROUTINE_MPN_INVERT): New macro.
+	* tune/common.c (speed_mpn_invert): New function.
+	* gmp-impl.h: Provide declarations for corresponding threshold var.
+	* tune/Makefile.am (TUNE_MPN_SRCS_BASIC): Add invert.c.
+
+2009-12-08  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* tests/devel/try.c: Test mpn_addlsh2_n and mpn_{add,sub}lsh_n;
+	mpn_rsblsh_n now tests all shift values.
+	* tests/refmpn.c (refmpn_addlsh_n, refmpn_sublsh_n): New functions.
+	(refmpn_addlsh1_n): Use generic refmpn_addlsh_n.
+	(refmpn_sublsh1_n): Use generic refmpn_sublsh_n.
+	(refmpn_addlsh2_n): New function.
+	* tests/tests.h: Declare new functions.
+
+2009-12-06  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (tune_mulmod_bnm1): Up min_size to 12.
+
+	* Globally: Rename *mullow* to *mullo*, *MULLOW* to *MULLO*.
+
+	* configure.in: Don't include ev5 directory for ev6* and ev7.  Misc
+	alpha path cleanups.
+	* mpn/alpha/add_n.asm: Replaced by mpn/alpha/ev5/add_n.asm.
+	* mpn/alpha/sub_n.asm: Replaced by mpn/alpha/ev5/sub_n.asm.
+	* mpn/alpha/lshift.asm: Replaced by mpn/alpha/ev5/lshift.asm.
+	* mpn/alpha/rshift.asm: Replaced by mpn/alpha/ev5/rshift.asm.
+	* mpn/alpha/com_n.asm: New, moved from mpn/alpha/ev5/rshift.asm.
+	* mpn/alpha/ev5/diveby3.asm: New, moved from mpn/alpha/diveby3.asm.
+
+	* mpn/powerpc64/mode64/diveby3.asm: Remove, it is slower than
+	mpn_bdiv_dbm1c on all hardware.
+
+	* mpn/generic/powm_sec.c: Rework logic for mpn_sqr_basecase size limit.
+
+	* gmp-impl.h (mpn_redc_1_sec): Declare.
+	* configure.in (gmp_mpn_functions): Add redc_1_sec.
+
+2009-12-06  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* tests/devel/try.c (try_one): DATA_SRC0_HIGHBIT sets the high bit.
+
+2009-12-05  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/toom_eval_dgr3_pm1.c: Change return value: 0 or ~0.
+	* mpn/generic/toom_eval_dgr3_pm2.c: Likewise.
+	* mpn/generic/toom_eval_pm1.c: Likewise.
+	* mpn/generic/toom_eval_pm2exp.c: Likewise.
+	* mpn/generic/toom_eval_pm2.c: Rewrite to use mpn_addlsh2_n.
+
+	* mpn/generic/toom_interpolate_5pts.c: Param sa is a flag, not a sign.
+
+	* mpn/generic/toom33_mul.c: Adapt to changes above.
+	* mpn/generic/toom3_sqr.c: Likewise.
+	* mpn/generic/toom42_mul.c: Likewise.
+	* mpn/generic/toom43_mul.c: Reduce branches.
+	* mpn/generic/toom44_mul.c: Likewise.
+	* mpn/generic/toom53_mul.c: Likewise.
+	* mpn/generic/toom62_mul.c: Likewise.
+
+	* mpn/generic/toom52_mul.c: Use toom_eval_ functions.
+
+	* mpn/generic/toom4_sqr.c: Avoid C99 construct.
+	* mpn/generic/toom_interpolate_7pts.c: Likewise.
+
+2009-12-05  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/redc_1_sec.c: New file.
+	* mpn/generic/powm_sec.c: Use redc_1_sec.  Use dummy full subtract
+	instead of mpn_cmp since the latter leaks to the side channel.
+	(mpn_local_sqr_n): New function, with associated macros.
+	(mpn_powm_sec): Use mpn_local_sqr_n.
+
+	* configure.in (HAVE_NATIVE): Add missing functions, then sort.
+
+2009-12-04  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (tune_dc_div): Up min_size to 6.
+	(tune_mod_1): Set MOD_1_1_THRESHOLD min_size to 2.
+
+	* tune/speed.h: Negate "binvert"-type inverses, as required.
+
+	* mpn/generic/redc_1.c: Add ASSERTs.
+	* mpn/generic/redc_2.c: Likewise.
+
+	* mpn/generic/sbpi1_bdiv_q.c: Simplify loops, indexing.
+
+2009-12-03  Yann Droneaud  <yann@droneaud.fr>
+
+	* acinclude.m4 ([long long reliability test 1]): Add a "static" for C99
+	inline semantics compatibility.
+
+2009-12-03  Torbjorn Granlund  <tege@gmplib.org>
+
+	* configure.in: Move intptr_t test into common AC_CHECK_TYPES.
+
+	* mpn/generic/gcdext.c: Add a TMP_FREE.
+
+2009-12-03  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/gcdext_1.c (mpn_gcdext_1) [GCDEXT_1_USE_BINARY]:
+	Added various masking tricks.
+
+	* mpn/generic/gcdext_1.c (mpn_gcdext_1) [GCDEXT_1_USE_BINARY]:
+	Reimplemented binary gcdext, with proper canonicalization.
+
+	* mpn/generic/gcdext_lehmer.c (mpn_gcdext_lehmer_n): Handle v == 0
+	from mpn_gcdext_1.
+	* mpn/generic/gcdext_1.c (mpn_gcdext_1): Allow inputs with a < b,
+	assertions fixed accordingly.
+
+2009-12-03  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c: Tune DC_DIVAPPR_Q_THRESHOLD.  Rewrite
+	DC_DIV_QR_THRESHOLD tuning code.
+	(tune_dc_div): Rewrite.
+	* tune/speed.h (SPEED_ROUTINE_MPN_PI1_DIV): New macro.
+	* tune/common.c (speed_mpn_sbpi1_div_qr, speed_mpn_dcpi1_div_qr,
+	speed_mpn_sbpi1_divappr_q, speed_mpn_sbpi1_bdiv_qr): New functions.
+	* gmp-impl.h: Provide declarations for corresponding threshold vars.
+	* tune/Makefile.am (TUNE_MPN_SRCS_BASIC): Add dcpi1_divappr_q.c.
+
+	* tune/tuneup.c (tune_binvert): Up max_size.
+
+2009-12-02  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* tests/devel/try.c: Test mpn_rsblsh2_n and mpn_rsblsh_n.
+	* tests/refmpn.c (refmpn_rsblsh_n, refmpn_rsblsh2_n): New functions.
+	(refmpn_rsblsh1_n): Use generic refmpn_rsblsh_n.
+	* tests/tests.h: Declare new functions.
+
+2009-12-03  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/gcdext_subdiv_step.c (mpn_gcdext_subdiv_step):
+	Select the right cofactor in the cases A == B or A == 2B.
+
+	* mpn/generic/gcdext_lehmer.c (mpn_gcdext_lehmer_n): Deleted
+	handling of ap[0] == 0 and bp[0] == 0; these cases don't happen.
+	Select the right cofactor in the case ap[0] == bp[0].
+	* mpn/generic/gcdext.c (mpn_gcdext): Analogous changes.
+
+2009-12-02  Niels Möller  <nisse@lysator.liu.se>
+
+	* gmp-h.in (mpn_gcdext_1): Updated prototype.
+	* mpn/generic/gcdext_lehmer.c (mpn_gcdext_lehmer_n): Updated for
+	signed cofactors from gcdext_1.
+	* mpn/generic/gcdext_1.c (mpn_gcdext_1): Use Euclid's algorithm,
+	and return signed cofactors.
+
+2009-12-02  Torbjorn Granlund  <tege@gmplib.org>
+
+	* doc/gmp.texi (Low-level Functions): Document mpn_sqr_n.
+
+	* tune/speed.c (routine): Add mpn_binvert.
+
+	* tune/tuneup.c: Tune BINV_NEWTON_THRESHOLD.
+	(tune_binvert): New function.
+	* tune/speed.h (SPEED_ROUTINE_MPN_BINVERT): New macro.
+	* tune/common.c (speed_mpn_binvert): New function.
+	* gmp-impl.h: Provide declarations for corresponding threshold var.
+	* tune/Makefile.am (TUNE_MPN_SRCS_BASIC): Add binvert.c.
+
+	* tune/tuneup.c: Tune DC_BDIV_QR_THRESHOLD and DC_BDIV_Q_THRESHOLD.
+	(tune_dc_bdiv): New function.
+	(tune_dc_div): New name for tune_dc.
+	* tune/speed.h (SPEED_ROUTINE_MPN_PI1_BDIV_QR,
+	SPEED_ROUTINE_MPN_PI1_BDIV_Q): New macros.
+	* tune/common.c (speed_mpn_sbpi1_bdiv_qr, speed_mpn_dcpi1_bdiv_qr,
+	speed_mpn_sbpi1_bdiv_q, speed_mpn_dcpi1_bdiv_q): New functions.
+	* gmp-impl.h: Provide declarations for corresponding threshold vars.
+	* tune/Makefile.am (TUNE_MPN_SRCS_BASIC): Add dcpi1_bdiv_qr.c and
+	dcpi1_bdiv_q.c.
+
+2009-12-01  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/toom53_mul.c: Removed double computation of vinf.
+
+	* mpn/x86_64/aorrlsh_n.asm: Correct return value for rsblsh_n.
+	* mpn/asm-defs.m4 (define_mpn): Add rsblsh_n.
+	* gmp-impl.h (mpn_rsblsh_n): Added prototype and name-mangling.
+
+	* mpn/generic/fib2_ui.c: Reduce the amount of temporary storage.
+	Use mpn_rsblsh_n.
+
+2009-12-01  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/redc_n.c: Rework temp allocation.
+
+	* mpn/generic/dcpi1_bdiv_qr.c (mpn_dcpi1_bdiv_qr_n_itch): Add pi1 also
+	to this function.
+
+	* mpn/generic/dcpi1_bdiv_q.c: Get the mpn_sbpi1_bdiv_q call right.
+	Misc cleanups.
+
+	* tune/speed.c (routine): Fix typo in last change.
+	Add mpn_redc_2.
+
+	* tune/speed.h (SPEED_ROUTINE_REDC_N): Set min size properly.
+
+2009-12-01  Niels Möller  <nisse@lysator.liu.se>
+
+	* tune/speed.c (routine): Added mpn_toom42_mul and mpn_redc_n.
+	* tune/speed.h (SPEED_ROUTINE_MPN_TOOM42_MUL): New macro.
+	(speed_mpn_toom42_mul): Declare function.
+	* tune/common.c (speed_mpn_toom42_mul): New function.
+	* gmp-impl.h (MPN_TOOM42_MUL_MINSIZE): New constant.
+
+2009-11-30  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/fib2_ui.c: Use mpn_rsblsh2_n.
+
+2009-11-29  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86_64/pentium4/gmp-mparam.h
+	(HAVE_NATIVE_mpn_addlsh1_n, HAVE_NATIVE_mpn_sublsh1_n): Don't undef.
+
+	* Makefile.am (EXTRA_DIST): Remove macos.
+
+2009-11-28  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (tune_redc): Set min_size to 16 for redc_n tuning.
+
+	* mpn/x86_64/sqr_basecase.asm (SQR_TOOM2_THRESHOLD_MAX): Avoid quoting
+	to allow configure.in parse it more easily.  Trim from 120 to 80.
+
+2009-11-28  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/mulmod_bnm1.c: Basecases made simpler, this also corrects
+	a bug affecting previous version.
+
+2009-11-28  Torbjorn Granlund  <tege@gmplib.org>
+
+	* configure.in: Handle atom also in 32-bit mode.
+	* mpn/x86/atom/gmp-mparam.h: New file.
+
+	* gmp-impl.h (MULMOD_BNM1_THRESHOLD): Default.
+
+	* mpn/generic/redc_n.c: Use mpn_mulmod_bnm1 instead of mpn_mul_n.
+
+	* Use TMP_ALLOC_LIMBS consistently.
+	* Finish renaming BITS_PER_MP_LIMB to GMP_LIMB_BITS.
+
+	* macos: Remove entire directory.
+
+2009-11-27  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86_64/corei/gmp-mparam.h: New file.
+	* mpn/x86_64/core2/gmp-mparam.h: Now for just core2.
+	* mpn/powerpc64/mode64/p3/gmp-mparam.h: New file.
+	* mpn/powerpc64/mode64/p4/gmp-mparam.h: New file.
+	* mpn/powerpc64/mode64/p5/gmp-mparam.h: New file.
+
+	* config.guess: Return "corei" for core i7 and core i5.
+	* config.sub: Recognise "corei".
+	* acinclude.m4 (X86_64_PATTERN): Add corei.
+	* configure.in (powerpc): Set up more CPU-specific paths.
+	(x86): Handle corei.
+
+	* mpz/powm.c: Allow input operand overlap also when exponent = 1.
+	Misc cleanups.
+
+2009-11-26  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* tests/mpn/t-mulmod_bnm1.c: New test file.
+	* tests/mpn/Makefile.am (check_PROGRAMS): Add t-mulmod_bnm1.
+
+	* mpn/generic/mullow_n.c: Comments on Mulders' trick implementation.
+
+2009-11-26  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/powm.c: Make comments reflect current code state.
+
+	* tests/devel/try.c: Make mpn_mullow_n testing actually work.
+
+2009-11-25  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpz/powm.c: Clean up unused defs.
+
+2009-11-24  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (tune_redc): Rewrite.
+	* mpn/generic/powm.c: Use REDC_1_TO_REDC_2_THRESHOLD,
+	REDC_1_TO_REDC_N_THRESHOLD, and REDC_2_TO_REDC_N_THRESHOLD.
+	Get rid of previous REDC params, including LOCAL_REDC_N_THRESHOLD.
+	(WANT_REDC_2): Define.
+	* gmp-impl.h: Corresponding changes.
+
+2009-11-23  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/powm.c: Fix typo.
+	Define LOCAL_REDC_N_THRESHOLD, use in REDC_2_THRESHOLD...
+	REDC_N_THRESHOLD chain.
+
+2009-11-22  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (tune_mullow): Set min_size to 1.
+
+	* mpn/generic/powm_sec.c: Use just mpn_mul_basecase and
+	mpn_sqr_basecase for multiplication and squaring.
+
+	* tune/tuneup.c: Tune REDC_2_THRESHOLD and REDC_N_THRESHOLD.
+	(tune_redc): New function.
+	(tune_powm): Remove function.
+	* tune/speed.h (SPEED_ROUTINE_REDC_2, SPEED_ROUTINE_REDC_N): New.
+	* tune/common.c (speed_mpn_redc_2, speed_mpn_redc_n): New.
+
+	* mpz/powm.c: Complete rewrite.  Use mpn_powm and mpn_powlo.
+	* mpn/generic/powm.c: Rewrite.
+	* mpn/generic/redc_n.c: New file.
+	* configure.in (gmp_mpn_functions): Add redc_n.
+	* gmp-impl.h (REDC_2_THRESHOLD, REDC_N_THRESHOLD): Default, and define
+	for tuneup.
+
+2009-11-21  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/mullow_n.c: Disable Mulders' trick for small operands,
+	use fft for bigger ones.
+	* tests/mpn/t-mullo.c: New test file.
+
+2009-11-22  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/tuneup.c (tune_mullow): Rewrite.
+
+2009-11-21  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* gmp-impl.h: Removed unused macros (CACHED_ABOVE_THRESHOLD and
+	CACHED_BELOW_THRESHOLD).
+
+	* mpn/generic/mullow_n.c: Use Mulders' trick.
+	* tune/tuneup.c (tune_mullow): MULLOW_MUL_N_THRESHOLD range of
+	search depends on FFT tuning;
+	(all): Anticipate tune_fft_{mul,sqr}.
+
+	* tune/speed.c (routine): Add entry related to mpn_mulmod_bnm1.
+
+2009-11-19  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/toom_eval_dgr3_pm2.c (mpn_toom_eval_dgr3_pm2)
+	[HAVE_NATIVE_mpn_add_n_sub_n]: Fixed typo in mpn_add_n_sub_n call
+	(spotted by Marco Bodrato).
+	* mpn/generic/toom_eval_pm2.c (mpn_toom_eval_pm2): Likewise.
+	* mpn/generic/toom_eval_pm2exp.c (mpn_toom_eval_pm2exp): Likewise.
+
+	* mpn/generic/toom_eval_pm2.c (mpn_toom_eval_pm2) [HAVE_NATIVE_mpn_addlsh_n]:
+	Fixed missing declaration.
+
+	* mpn/asm-defs.m4 (define_mpn): Add addlsh_n.
+	* gmp-impl.h (mpn_addlsh_n): Added prototype and name-mangling.
+
+2009-11-19  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/toom_eval_pm2.c (mpn_toom_eval_pm2): New file.
+	* mpn/generic/toom53_mul.c (mpn_toom53_mul): Use mpn_toom_eval_pm2.
+	* mpn/generic/toom62_mul.c (mpn_toom62_mul): Likewise.
+	* configure.in (gmp_mpn_functions): Added toom_eval_dgr3_pm2.
+
+2009-11-18  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-impl.h (mpn_and_n, etc): Adapt to now-public logic functions.
+
+	* config.guess: Recognise VIA nano.
+	* config.sub: Likewise.
+	* configure.in: Generalise x86_64 support; recognise VIA nano.
+
+2009-11-16  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/speed.c (routine): Add measurement of mpn_addlsh2_n,
+	mpn_sublsh2_n, mpn_rsblsh2_n.
+	* tune/common.c: Add speed routines for lsh2 functions.
+
+	* mpn/generic/divis.c: Use MU_BDIV_QR_THRESHOLD.
+
+	* configure.in (gmp_mpn_functions_optional): Add *lsh_n functions.
+
+	* mpn/generic/toom_eval_pm2exp.c: Make HAVE_NATIVE_mpn_addlsh_n code
+	work.
+
+	* mpn/x86_64/aorrlsh2_n.asm: Optimise inner loop.
+
+	* configure.in (gmp_mpn_functions_optional): Remove copyi,copyd, they
+	are now in gmp_mpn_functions.  Analogously move logical functions.
+
+2009-11-16  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/toom53_mul.c: Use addlsh2 for evaluation (and fix typo).
+	* mpn/generic/toom_eval_dgr3_pm2.c: Likewise (affects toom44 and 43).
+
+	* mpn/asm-defs.m4: Fix comments for op_lsh2 new functions.
+	* gmp-impl.h: Likewise.
+	* tests/mpz/t-fac_ui.c: Fix a comment.
+
+2009-11-15  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86_64/aorrlsh2_n.asm: New file.
+	* configure.in: Add support for addlsh2_n, sublsh2_n, and rsblsh2_n,
+	including mulfuncs.
+	* gmp-impl.h (mpn_addlsh2_n, mpn_sublsh2_n, mpn_rsblsh2_n): Declare.
+	* mpn/asm-defs.m4: Likewise.
+
+	* mpn/generic/copyi.c: New file.
+	* mpn/generic/copyd.c: Likewise.
+	* mpn/generic/zero.c: Likewise.
+	* gmp-h.in: Declare new functions.
+	* configure.in (gmp_mpn_functions): Add new functions.
+
+2009-11-15  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/mulmod_bnm1.c (mpn_mulmod_bnm1_next_size): fix typo
+
+	* mpn/generic/toom33_mul.c: Use rsblsh1 for evaluation.
+	* mpn/generic/toom3_sqr.c: Likewise.
+
+2009-11-14  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/toom52_mul.c: Use mpn_addlsh1_n.
+
+	* mpn/generic/toom52_mul.c: Toggle the right flag bit in an
+	HAVE_NATIVE_mpn_add_n_sub_n arm.
+
+	* tests/mpz/t-remove.c: New file.
+
+	* mpn/generic/remove.c: Major overhaul.  Add parameter 'cap'.
+
+	* mpn/generic/binvert.c: Fix typo in last change.
+
+	* mpn/generic/bdiv_qr.c: Make it actually work.  Also use passed-in
+	scratch space.
+
+	* mpn/generic/mu_bdiv_qr.c: Reset FFT parameters for each call.
+
+2009-11-12  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86/k7/gcd_1.asm (MASK): Compute from MAXSHIFT.
+
+2009-11-11  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/binvert.c: Simplify, fix comments.
+
+	* tests/devel/try.c: Test mpn_invert and mpn_binvert.
+
+	* tests/refmpn.c (refmpn_invert, refmpn_binvert): New functions.
+	* tests/tests.h: Declare new functions.
+
+2009-11-10  Torbjorn Granlund  <tege@gmplib.org>
+
+	* configure.in: Supply compiler options for atom in 32-bit mode.
+
+	* acinclude.m4 (X86_64_PATTERN): New.
+	* configure.in: Setup and use X86_64_PATTERN.
+
+	* mpn/x86_64/fat/fat.c: New file.
+	* mpn/x86_64/fat/fat_entry.asm: New file.
+	* mpn/x86_64/fat: Copy C placeholder files from mpn/x86/fat.
+	* mpn/x86_64/x86_64-defs.m4 (CPUVEC_FUNCS_LIST): New, copied from
+	mpn/x86/x86-defs.m4.
+	* configure.in: Move down x86 fat setup code until after ABI has been
+	determined; generalise to handle x86_64.
+
+2009-11-09  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86/fat/mod_1.c: New file.
+
+	* acinclude.m4 (GMP_C_FOR_BUILD_ANSI): Avoid poor quoting.
+
+2009-11-08  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-impl.h (MPN_LOGOPS_N_INLINE): Rewrite, update interface.  Callers
+	updated.
+	* mpn/generic/logops_n.c: New file.
+	* doc/gmp.texi (Low-level Functions): Document logical mpn functions.
+
+2009-11-07  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/speed.h (SPEED_ROUTINE_MPN_MULMOD_BNM1): Adapt to new
+	mpn_mulmod_bnm1 interface.
+
+2009-11-07  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/mulmod_bnm1.c: New interface, with size
+	specified for all operands in mpn_mulmod_bnm1.
+	* gmp-impl.h: Changed mpn_mulmod_bnm1 prototype.
+
+2009-11-05  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86/k7/gcd_1.asm: Actually use div-reduced value.
+	Mnemonic cleanup.
+
+	* mpn/x86_64/gcd_1.asm: New file.
+
+2009-11-03  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/Makefile.am (TUNE_MPN_SRCS_BASIC): Add sqr_n.c.
+
+2009-11-03  Marco Bodrato <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/toom_interpolate_6pts.c: removed an addmul_1 and cleanup.
+
+2009-11-02  Torbjorn Granlund  <tege@gmplib.org>
+
+	* configure.in (gmp_mpn_functions): Remove obsolete functions
+	dc_divrem_n and sb_divrem_mn.
+	* gmp-impl.h: Misc cleanup.
+	(mpn_sb_divrem_mn, mpn_dc_divrem_n): Remove.
+	(DIV_DC_THRESHOLD): Remove.
+	* mpn/generic/dc_divrem_n.c: Remove.
+	* mpn/generic/sb_divrem_mn.c: Remove.
+	* mpn/generic/tdiv_qr.c: Use DC_DIV_QR_THRESHOLD, not DIV_DC_THRESHOLD.
+
+	* tests/devel/try.c: Replace mpn_sb_divrem_mn by mpn_sbpi1_div_qr.
+	* tests/refmpn.c (refmpn_sb_div_qr): New name for refmpn_sb_divrem_mn.
+
+	* tune/Makefile.am (libspeed_la_SOURCES): Remove sb_div.c and sb_inv.c.
+	(TUNE_MPN_SRCS_BASIC): Remove sb_divrem_mn.c.
+	* tune/common.c (speed_mpn_dcpi1_div_qr_n): New function.
+	 Remove mpn_sb_divrem_mn related functions.
+	* tune/speed.c (routine): Remove entries related to mpn_dc_divrem and
+	mpn_sb_divrem.
+	(routine): New entry for mpn_dc_div_qr_n.
+	* tune/speed.h (SPEED_ROUTINE_MPN_DC_DIVREM_CALL): Compute inverse
+	needed by pi1 calls.
+	(SPEED_ROUTINE_MPN_SB_DIVREM_M3): Remove.
+	* tune/tuneup.c (tune_sb_preinv): Remove.
+	(tune_dc): Update to measure DC_DIV_QR_THRESHOLD.
+
+	* mpn/generic/sb_divappr_q.c: Remove.
+
+2009-11-01  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-impl.h: Misc minor cleanups.
+
+2009-10-31  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-impl.h (toom itch functions): Simplify, make some into macros.
+	(MPN_KARA_MUL_N_TSIZE, MPN_KARA_SQR_N_TSIZE): Remove.
+	* mpn/generic/mul_n.c (mpn_toom3_mul_n, mpn_toom3_sqr_n): Remove.
+	* mpn/generic/mul_n.c (mpn_sqr_n): Move from here...
+	* mpn/generic/sqr_n.c: ...to this new file.
+	* configure.in (gmp_mpn_functions): Add sqr_n.
+
+	* Globally change
+	  MUL_TOOM3_THRESHOLD => MUL_TOOM33_THRESHOLD,
+	  MUL_KARATSUBA_THRESHOLD => MUL_TOOM22_THRESHOLD,
+	  SQR_KARATSUBA_THRESHOLD => SQR_TOOM2_THRESHOLD,
+	and associated names analogously.
+
+2009-10-31  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/toom_interpolate_7pts.c: Changed evaluation points,
+	replacing -1/2 by -2.
+	* mpn/generic/toom44_mul.c: Updated to use new evaluation points,
+	and use mpn_toom_eval_dgr3_pm2.
+	* mpn/generic/toom4_sqr.c (mpn_toom4_sqr): Likewise.
+	* mpn/generic/toom53_mul.c (mpn_toom53_mul): Updated to use new
+	evaluation points, and use mpn_toom_eval_pm1 and
+	mpn_toom_eval_pm2exp.
+	* mpn/generic/toom62_mul.c (mpn_toom62_mul): Likewise.
+
+	* mpn/generic/toom_eval_pm2exp.c: New file.
+	* mpn/generic/toom_eval_pm1.c: New file.
+
+	* mpn/generic/toom43_mul.c (mpn_toom43_mul): Use
+	mpn_toom_eval_dgr3_pm2.
+
+2009-10-30  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tune/Makefile.am (TUNE_MPN_SRCS_BASIC): Add toom2* and toom3* files.
+
+2009-10-30  Niels Möller  <nisse@lysator.liu.se>
+
+	* configure.in (gmp_mpn_functions): Added toom_eval_dgr3_pm2.
+	* gmp-impl.h: Added prototype for mpn_toom_eval_dgr3_pm2.
+	* mpn/generic/toom_eval_dgr3_pm2.c: New file.
+
+2009-10-29  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/toom43_mul.c (mpn_toom43_mul): Use
+	mpn_toom_eval_dgr3_pm1.
+	* mpn/generic/toom42_mul.c (mpn_toom42_mul): Likewise.
+
+2009-10-29  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/mulmod_bnm1.c: Replace some add_1 by INCR.
+
+	* gmp-impl.h (mpn_mulmod_bnm1_itch): New macro.
+
+	* mpn/generic/mulmod_bnm1.c (mpn_mulmod_bnm1): Call mpn_mul_fft.
+	(mpn_mulmod_bnm1_next_size): Adopt to SS FFT.
+
+	* mpn/generic/mul_fft.c (mpn_mul_fft): Make it return high limb.
+	(mpn_mul_fft_internal): Likewise.
+
+	* mpn/generic/mulmod_bnm1.c: New file, by Niels Möller.
+	* configure.in (gmp_mpn_functions): Add mulmod_bnm1.
+	* gmp-impl.h: Add related declarations.
+	* tune/tuneup.c: Tune MULMOD_BNM1_THRESHOLD.
+	* tune/speed.h (SPEED_ROUTINE_MPN_MULMOD_BNM1): New macro.
+	* tune/common.c (speed_mpn_mulmod_bnm1): New function.
+	* Makefile.am (TUNE_MPN_SRCS_BASIC): Add mulmod_bnm1.c.
+
+	* gmp-impl.h (mpn_kara_mul_n, mpn_kara_sqr_n): Remove declarations.
+	* tune/common.c: Remove/rename kara functions.
+	* tune/speed.h: Likewise.
+
+	* tests/devel/try.c: Clean up usage of %p printf arguments.
+
+	* gmp-impl.h: Update MUL/SQR MINSIZE macros to reflect new function
+	names and limitations
+	* tune/tuneup.c: Use updated macro names.
+	* tune/speed.h: Likewise.
+	* tests/devel/try.c: Test new mul/sqr functions, remove old tests.
+
+2009-10-29  Niels Möller  <nisse@lysator.liu.se>
+
+	* tune/speed.c: Added support for mpn_toom4_sqr,
+
+	* tune/speed.h (SPEED_ROUTINE_MPN_TOOM4_SQR): New macro.
+	(SPEED_ROUTINE_MPN_KARA_MUL_N): Deleted.
+	(SPEED_ROUTINE_MPN_TOOM3_MUL_N): Deleted.
+	(SPEED_ROUTINE_MPN_TOOM2_SQR): Use mpn_toom2_sqr_itch.
+
+	* gmp-impl.h (mpn_toom3_mul_n, mpn_toom3_sqr_n): Remove
+	declarations.
+	(mpn_toom2_sqr_itch): Add margin for recursive calls.
+
+2009-10-28  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/mul_n.c (mpn_kara_mul_n): Deleted old Karatsuba
+	implementation.
+	(mpn_kara_sqr_n): Likewise deleted.
+
+	* mpn/generic/mul_n.c (mpn_sqr_n): Use mpn_toom2_sqr and
+	mpn_toom3_sqr, not the old implementations.
+
+	* gmp-impl.h (MPN_TOOM3_MUL_N_TSIZE): Deleted, replaced by
+	mpn_toom33_mul_itch.
+	(MPN_TOOM3_SQR_N_TSIZE): Deleted, replaced by
+	mpn_toom3_sqr_itch.
+	(mpn_toom33_mul_itch): Needs more scratch.
+	(mpn_toom3_sqr_itch): Likewise.
+	* tune/speed.h (SPEED_ROUTINE_MPN_TOOM3_MUL_N): Use
+	mpn_toom33_mul_itch.
+	(SPEED_ROUTINE_MPN_TOOM3_SQR_N): Use mpn_toom3_sqr_itch.
+	* mpn/generic/mul_n.c (mpn_mul_n): Use mpn_toom33_mul_itch.
+	(mpn_sqr_n): Use mpn_toom3_sqr_itch.
+
+	* mpn/generic/toom33_mul.c (mpn_toom33_mul): Avoid TMP_ALLOC. Needs
+	some more supplied scratch instead.
+	* mpn/generic/toom3_sqr.c (mpn_toom3_sqr): Likewise.
+
+2009-10-26  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-impl.h (invert_pi1): Streamline, as suggested by Niels.
+
+2009-10-24  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/bdiv_q.c: Update to call new functions.
+	* mpn/generic/bdiv_qr.c: Likewise.
+	* mpn/generic/binvert.c: Likewise.
+	* mpn/generic/divexact.c: Likewise.
+	* mpn/generic/divis.c: Likewise.
+	* mpn/generic/perfpow.c: Likewise.
+	* mpn/generic/tdiv_qr.c: Likewise.
+	* mpn/generic/dcpi1_bdiv_q.c: New file.
+	* mpn/generic/dcpi1_bdiv_qr.c: New file.
+	* mpn/generic/dcpi1_div_q.c: New file.
+	* mpn/generic/dcpi1_div_qr.c: New file.
+	* mpn/generic/dcpi1_divappr_q.c: New file.
+	* mpn/generic/sbpi1_bdiv_q.c: New file.
+	* mpn/generic/sbpi1_bdiv_qr.c: New file.
+	* mpn/generic/sbpi1_div_q.c: New file.
+	* mpn/generic/sbpi1_div_qr.c: New file.
+	* mpn/generic/sbpi1_divappr_q.c: New file.
+	* mpn/generic/dc_bdiv_q.c: Removed.
+	* mpn/generic/dc_bdiv_qr.c: Removed.
+	* mpn/generic/dc_div_q.c: Removed.
+	* mpn/generic/dc_div_qr.c: Removed.
+	* mpn/generic/dc_divappr_q.c: Removed.
+	* mpn/generic/sb_bdiv_q.c: Removed.
+	* mpn/generic/sb_bdiv_qr.c: Removed.
+	* mpn/generic/sb_div_q.c: Removed.
+	* mpn/generic/sb_div_qr.c: Removed.
+
+	* configure.in (gmp_mpn_functions): Add new division functions, remove
+	obsolete division functions.
+
+	* gmp-impl.h: Add declarations of new division functions, remove
+	corresponding obsolete declarations.
+	(gmp_pi1_t, gmp_pi2_t): New types.
+	(invert_pi1): New macro for computing 2/1 and 3/2 inverses.
+
+2009-10-23  Niels Möller  <nisse@lysator.liu.se>
+
+	* gmp-impl.h (mpn_toom62_mul_itch): New function.
+
+	* tests/mpn/t-toom53.c: New test program.
+	* tests/mpn/t-toom62.c: New test program.
+
+2009-10-23  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/get_d.c: Fix code handling denorms for 64-bit machines.
+	* tests/mpf/t-get_d.c (test_denorms): New function.
+
+2009-10-23  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/toom52_mul.c (mpn_toom52_mul): Use supplied scratch
+	space, not TMP_ALLOC. Interface change, now requires input sizes
+	such that s + t >= 5.
+
+	* gmp-impl.h (mpn_toom52_mul_itch): New function.
+
+	* tests/mpn/t-toom52.c: New test program.
+
+2009-10-22  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86_64/sqr_basecase.asm: Tune for speed and a 7% size decrease.
+
+2009-10-22  Niels Möller  <nisse@lysator.liu.se>
+
+	* tests/mpn/t-toom44.c: New test program.
+	* tests/mpn/t-toom33.c: New test program.
+
+	* tests/mpn/toom-shared.h (main): Reorganized input generation.
+	Users are now supposed to define macros MAX_AN, MIN_BN and MAX_BN.
+	Updated existing toom test programs.
+
+2009-10-22  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tests/devel/try.c: Fix typos in last change.
+
+2009-10-21  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/asm-defs.m4 (define_mpn): Add mullow_basecase.
+
+	* tests/devel/try.c: Test mpn_mullow_n.
+
+	* tests/refmpn.c (refmpn_mullow_n): New function.
+	* tests/tests.h: Declare it.
+
+2009-10-21  Niels Möller  <nisse@lysator.liu.se>
+
+	* tests/mpn/toom-shared.h (main): Check for writes outside of the
+	product or scratch area.
+
+	* gmp-impl.h (mpn_toom43_mul_itch): New function.
+
+	* mpn/generic/toom43_mul.c (mpn_toom43_mul): Use supplied scratch
+	space, not TMP_ALLOC. Interface change, now requires input sizes
+	such that s + t >= 5.
+
+2009-10-20  Niels Möller  <nisse@lysator.liu.se>
+
+	* tests/mpn/toom-shared.h (MIN_BLOCK): New constant, which can be
+	overridden by users. Needed by t-toom42 and t-toom43.
+
+	* tests/mpn/Makefile.am (check_PROGRAMS): Added t-toom32,
+	t-toom42 and t-toom43.
+	* tests/mpn/t-toom43.c: New test program.
+	* tests/mpn/t-toom42.c: New test program.
+	* tests/mpn/t-toom32.c: New test program.
+
+	* tests/mpn/Makefile.am (check_PROGRAMS): Added t-toom22.
+	* tests/mpn/t-toom22.c: New test file.
+	* tests/mpn/toom-shared.h: New file. Test framework for Toom
+	functions.
+
+2009-10-14  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/hgcd.c (mpn_hgcd_itch): Thanks to the new
+	mpn_matrix22_mul_strassen, the scratch need is reduced by 16%.
+
+2009-10-14  Marco Bodrato  <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/matrix22_mul.c (mpn_matrix22_mul_strassen): New
+	Strassen-like algorithm, to reduce the amount of temporary
+	storage.
+	(mpn_matrix22_mul_itch): Updated to reflect the reduced storage
+	need.
+
+2009-10-03  Torbjorn Granlund  <tege@gmplib.org>
+
+	* Rename mpn_addsub_n to mpn_add_n_sub_n.
+
+2009-10-01  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/tdiv_qr.c: Call mpn_divrem_1 and mpn_dc_div_qr instead of
+	old functions.
+
+	* mpn/generic/mul_n.c: Call toom22 and toom33 instead of old functions.
+
+	* mpn/generic/toom42_mul.c (TOOM42_MUL_N_REC): Renamed from
+	TOOM22_MUL_N_REC.  Unconditionally call the generic mpn_mul_n.
+	* mpn/generic/toom32_mul.c: Analogous changes.
+
+2009-09-28  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/x86_64/invert_limb.asm: Rewrite. Exploit cancellation in the
+	Newton iteration.
+
+2009-09-27  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/x86/invert_limb.asm: Reduce register usage. Eliminated $1
+	arguments to add, sub and shift.
+
+2009-09-25  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/x86/invert_limb.asm: New file.
+
+2009-09-24  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/toom33_mul.c: Use new toom functions for all recursive
+	products.
+	* mpn/generic/toom3_sqr.c: Likewise.
+	* mpn/generic/toom44_mul.c: Likewise.
+	* mpn/generic/toom4_sqr.c: Likewise.
+
+	* mpn/generic/add_n.c: Relax operand overlap ASSERTs.
+	* mpn/generic/sub_n.c: Likewise.
+
+2009-09-15  Torbjorn Granlund  <tege@gmplib.org>
+
+	Suggested by Uwe Mueller:
+	* printf/doprnt.c: Use "%ld" for exponent printing.
+	* printf/doprntf.c (__gmp_doprnt_mpf): Make expval "long".
+
+2009-09-14  Torbjorn Granlund  <tege@gmplib.org>
+
+	* configure.in: Handle mingw64.
+	* gmp-impl.h (gmp_intptr_t): Declare.
+	* tests/amd64check.c (calling_conventions_values): Use CNST_LIMB.
+	* tests/memory.c: Use gmp_intptr_t; print pointers using C90 "%p".
+	* tests/misc.c: Use gmp_intptr_t.
+	* tests/mpq/t-get_str.c: Print pointers using C90 "%p".
+
+2009-08-12  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/mod_1_1.c (mpn_mod_1_1p_cps): Remove silly ASSERT code.
+
+	* mpn/asm-defs.m4 (define_mpn): Remove mod_1s_1p, add mod_1_1p.
+
+	* mpn/arm/invert_limb.asm: Complete rewrite.
+
+	* longlong.h: Document LONGLONG_STANDALONE and NO_ASM.
+
+2009-08-05  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tests/mpz/dive_ui.c (check_random): Avoid zero divisors.
+
+2009-07-31  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/mod_1_1.c: Tweak to handle any modulus (possibility
+	pointed out by Per Austrin).
+	(mpn_mod_1_1p): Renamed from mpn_mod_1s_1p.
+	(mpn_mod_1_1p_cps): Renamed from mpn_mod_1s_1p_cps.
+	*mpn/generic/mod_1.c (mpn_mod_1): Reorganise to call mpn_mod_1_1p for
+	any modulus.
+
+2009-07-28  Torbjorn Granlund  <tege@gmplib.org>
+
+	* configure.in: Pass arch for x86 also in 64-bit mode.
+
+2009-07-26  Torbjorn Granlund  <tege@swox.com>
+
+	* config.guess (_cpuid): Recognise more Intel "Core" processors.
+
+2009-07-13  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpf/eq.c: Rewrite.
+
+	* tests/mpf/t-eq.c: New test.
+
+2009-07-06  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-impl.h (__mp_bases): Remove this alias.
+
+	* mpf/get_str.c: Use less overflow prone expression for computing limb
+	allocation.
+	* mpz/inp_str.c: Likewise.
+	* mpf/set_str.c: Likewise.
+	* mpz/set_str.c: Likewise.
+
+2009-07-03  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/gcd_1.c (mpn_gcd_1): Use masking tricks to reduce
+	the number of branches in the loop.
+
+2009-06-28  Torbjorn Granlund  <tege@gmplib.org>
+
+	* demos/factorize.c (factor_using_pollard_rho): Rewrite.
+
+	* mpz/clears.c: New file.
+	* mpq/clears.c: New file.
+	* mpf/clears.c: New file.
+	* gmp-h.in (mpz_clears, mpq_clears, mpf_clears): Declare.
+	* mpz/Makefile.am: Add clears.c.
+	* mpq/Makefile.am: Add clears.c.
+	* mpf/Makefile.am: Add clears.c.
+	* Makefile.am: Add these also to respective OBJECTS variables.
+	* doc/gmp.texi: Document inits function and clears functions.
+
+2009-06-20  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mp-h.in (mp_bitcnt_t): Declare here too.
+
+2009-06-19  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpq/inits.c: New file.
+	* mpf/inits.c: New file.
+	* gmp-h.in (mpz_inits, mpq_inits, mpf_inits): Declare .
+
+	* mpn/generic/remove.c: New file.
+	* configure.in (gmp_mpn_functions): Add remove.
+	* gmp-impl.h (mpn_remove): Declare.
+
+	* gmp-h.in (mp_bitcnt_t): New basic type.
+	* mpn/generic/perfpow.c (mp_bitcnt_t): Remove private definition.
+
+	* mpn/generic/bdiv_qr.c: Make it actually work.
+
+	* mpn/x86_64/core2/aorsmul_1.asm: Rewrite to use shorter pipeline and
+	to need fewer registers.
+
+2009-06-17  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86_64/rsh1aors_n.asm: New file.
+	* mpn/x86_64/rsh1add_n.asm: Remove.
+	* mpn/x86_64/rsh1sub_n.asm: Remove.
+
+	* mpz/inits.c: New file.
+
+	* gen-trialdivtab.c: Wrap limb constants into CNST_LIMB.
+
+	With Martin Boij:
+	* mpn/generic/perfpow.c (binv_root, binv_sqroot): Change from being
+	recursive to being iterative.
+	(mpn_perfect_power_p): Reorganise temp memory usage to avoid a buffer
+	overrun.  Trim allocation of next and prev.  Never create oversize
+	products in the multiplicity binary search.
+
+	* mpn/generic/dc_div_q.c: Add missing TMP_FREE.
+
+2009-06-16  Torbjorn Granlund  <tege@gmplib.org>
+
+	Revert:
+	* mpn/generic/perfpow.c (perfpow): Test exponents up to ub, inclusive.
+
+2009-06-16  Martin Boij  <mboij@kth.se>
+
+	* mpn/generic/perfpow.c (logs): Use more conservative table.
+
+2009-06-15  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/pa64/aors_n.asm: New file.
+	* mpn/pa64/add_n.asm: Remove.
+	* mpn/pa64/sub_n.asm: Remove.
+
+	* mpn/generic/perfpow.c (perfpow): Test exponents up to ub, inclusive.
+
+2009-06-14  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86_64/bdiv_q_1.asm: Optimise away a mov insn.
+	* mpn/x86_64/dive_1.asm: Likewise.
+
+	* mpn/generic/perfpow.c (binv_root): Use mpn_bdiv_q_1, not
+	mpn_divexact_itch for 2-adic division.
+	(all functions): Micro optimise.
+
+	* Makefile.am (libmp_la_SOURCES): Add nextprime.c.
+
+2009-06-13  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-h.in (mpn_perfect_power_p): Declare.
+	* configure.in (gmp_mpn_functions): Add perfpow.
+	* mpz/perfpow.c: Now trivial, simply calls mpn_perfect_power_p.
+
+2009-06-13  Martin Boij  <mboij@kth.se>
+
+	* mpn/generic/perfpow.c: New file.
+	* tests/mpz/t-perfpow.c: Rewrite.
+
+2009-06-12  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/bdiv_qr.c: New file.
+	* mpn/generic/bdiv_q.c: New file.
+	* configure.in (gmp_mpn_functions): Add bdiv_qr and bdiv_q.
+	* gmp-impl.h: Declare new functions.
+
+	* nextprime.c: New file.
+	* gmp-impl.h (gmp_primesieve_t, gmp_init_primesieve, gmp_nextprime):
+	Declare
+	* Makefile.am (libgmp_la_SOURCES): Add nextprime.c.
+
+2009-06-11  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/trialdiv.c: New file.
+	* gen-trialdivtab.c: New file.
+	* configure.in (gmp_mpn_functions): Add trialdiv.
+	* gmp-impl.h (mpn_trialdiv): Declare
+	* Makefile.am: Add rules for gen-trialdivtab and trialdiv.
+
+	* longlong.h (arm count_leading_zeros): Define for armv5.
+
+	* gmp-impl.h: Move down toom itch functions to after we've #defined
+	all THRESHOLDs.
+
+	* dumbmp.c (isprime): Replace with slightly less inefficient code.
+	(mpz_tdiv_r): New function.
+
+2009-06-11  Niels Möller  <nisse@lysator.liu.se>
+
+	Support for mpn_toom32_mul in speed:
+	* tune/speed.c (routine): Added mpn_toom32_mul.
+	* tune/speed.h (SPEED_ROUTINE_MPN_TOOM32_MUL): New macro.
+	* tune/common.c (speed_mpn_toom32_mul): New function.
+
+	* gmp-impl.h (mpn_toom32_mul_itch): Count scratch space needed
+	for the calls to mpn_toom22_mul.
+	(ABOVE_THRESHOLD): Moved this and related macros so it can be used
+	by mpn_toom32_mul_itch.
+	(mpn_toom22_mul_itch): Count scratch space for recursive calls.
+
+2009-06-11  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86/k7/mod_1_4.asm: New file, mainly for k7, but perhaps useful
+	also for k6 and non-sse p6.
+
+2009-06-10  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86_64/mod_1_4.asm: Minor size reducing tweaks.
+
+	* mpn/x86/mod_1.asm: Remove obsolete file.
+	* mpn/x86/k7/mmx/mod_1.asm: Likewise.
+	* mpn/x86/pentium4/sse2/mod_1.asm: Likewise.
+	* mpn/x86/p6/mod_1.asm: Likewise.
+	* mpn/x86/pentium/mod_1.asm: Likewise.
+
+2009-06-08  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/toom4_sqr.c (mpn_toom4_sqr): Reorganized, to reduce
+	the need for scratch space, and get rid of TMP_ALLOC. Also use
+	mpn_toom_eval_dgr3_pm1.
+
+	* mpn/generic/toom_interpolate_6pts.c (mpn_toom_interpolate_6pts):
+	Stricter ASSERTs based on maximum size of polynomial coefficients.
+	Improved comments on the signedness of intermediate values.
+
+2009-06-07  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/toom2_sqr.c: Make it actually work.
+
+	* mpn/generic/toom3_sqr.c: Reduce local scratch space.
+
+2009-06-05  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/mul_fft.c (FFT_TABLE2_SIZE): Default to 200.
+	(MUL_FFT_TABLE2_SIZE, SQR_FFT_TABLE2_SIZE): Let these decide
+	FFT_TABLE2_SIZE if they are defined.
+	(struct nk): Use bit field.
+
+2009-06-05  Niels Möller  <nisse@lysator.liu.se>
+
+	* mpn/generic/toom44_mul.c (mpn_toom44_mult): Use
+	mpn_toom_eval_dgr3_pm1.
+
+	* mpn/generic/toom_eval_dgr3_pm1.c: New file.
+
+	* mpn/generic/toom_interpolate_7pts.c (mpn_toom_interpolate_7pts):
+	Minor cleanup, use mpn_add rather than mpn_add_n + MPN_INCR_U.
+
+	* mpn/generic/toom44_mul.c (mpn_toom44_mul): Reorganized, to
+	reduce the need for scratch space, and get rid of TMP_ALLOC.
+
+2009-06-05  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/toom_interpolate_7pts.c: Fall back mpn_divexact_byN to
+	mpn_bdiv_q_1_pi1, if the latter is NATIVE.
+
+2009-06-04  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86_64/bdiv_q_1.asm: New file.
+
+	* configure.in (HAVE_NATIVE): Add recently added functions.
+	(GMP_MULFUNC_CHOICES): Handle addlsh_n, sublsh_n, rsblsh_n.
+
+	* tune/common.c (speed_mpn_bdiv_q_1, speed_mpn_bdiv_q_1_pi1):
+	New functions.
+	* tune/speed.c (routine): Add mpn_bdiv_q_1 and mpn_bdiv_q_1_pi1.
+	* tune/speed.h (SPEED_ROUTINE_MPN_BDIV_Q_1_PI1): New #define.
+	(SPEED_ROUTINE_MPN_BDIV_Q_1): Mew #define.
+
+	* configure.in (gmp_mpn_functions): Add bdiv_q_1.
+	* mpn/generic/bdiv_q_1.c: New file.
+	* mpn/asm-defs.m4 (define_mpn): Add mpn_bdiv_q_1 and mpn_bdiv_q_1_pi1.
+	* gmp-impl.h (mpn_bdiv_q_1, mpn_bdiv_q_1_pi1): Declare.
+
+	* mpn/x86_64/lshift.asm: Cleanup.
+	* mpn/x86_64/rshift.asm: Cleanup.
+
+	* mpn/x86_64/addlsh1_n.asm: Removed.
+	* mpn/x86_64/aorrlsh1_n.asm: Generalised addlsh1_n.asm to handle
+	addlsh1_n and rsblsh1_n functionality.
+
+	* tests/refmpn.c (refmpn_rsblsh1_n): New function.
+	* tests/devel/try.c: Test mpn_rsblsh1_n.
+	* tests/tests.h: Declare refmpn_rsblsh1_n.
+	* tune/common.c (speed_mpn_rsblsh1_n): New function.
+	* tune/speed.c (routine): Add mpn_rsblsh1_n.
+	* tune/speed.h (mpn_rsblsh1_n): Declare.
+
+	* configure.in (gmp_mpn_functions_optional): Add rsblsh1_n.
+	(GMP_MULFUNC_CHOICES): Handle rsblsh1_n defined with a mulfunc.
+	* mpn/asm-defs.m4 (define_mpn): Add rsblsh1_n.
+	* gmp-impl.h (mpn_rsblsh1_n): Declare.
+
+	* mpn/generic/toom32_mul.c: Consistently use TOOM22_MUL_N_REC.
+
+2009-06-03  Marco Bodrato  <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/toom43_mul.c: New file.
+	* mpn/generic/toom52_mul.c: New file.
+	* mpn/generic/toom_interpolate_6pts.c: New file.
+
+2009-06-03  Torbjorn Granlund  <tege@gmplib.org>
+
+	* configure.in (gmp_mpn_functions): Add toom43_mul, toom52_mul, and
+	toom_interpolate_6pts, but also some previously forgotten functions.
+	* mpn/Makefile.am (nodist_EXTRA_libmpn_la_SOURCES): Likewise.
+	* gmp-impl.h: Declare new functions. Sort toom function declarations.
+
+	* gmp-impl.h: Rename  toom4_* flags enum to toom7_*.  Relevant C files
+	updated.
+
+	* mpn/generic/toom_interpolate_7pts (divexact_2exp): Remove.
+
+2009-06-02  Torbjorn Granlund  <tege@gmplib.org>
+
+	* demos/factorize.c: Add -q command line option.
+
+2009-06-02  Marco Bodrato  <bodrato@mail.dm.unipi.it>
+
+	* mpn/generic/toom_interpolate_7pts.c: Streamline, resulting in speed
+	improvements.
+
+	* mpn/generic/toom_interpolate_5pts.c: Likewise, but also completely
+	do away with explicit scratch space.
+	* gmp-impl.h (mpn_toom_interpolate_5pts): Update prototype.
+
+	* mpn/generic/mul_n.c (mpn_toom3_sqr_n, mpn_toom3_mul_n):
+	Update toom_interpolate_5pts call without scratch space parameter.
+	* mpn/generic/toom3_sqr.c: Likewise.
+	* mpn/generic/toom42_mul.c: Likewise.
+	* mpn/generic/toom33_mul.c: Likewise.
+
+	* mpn/generic/toom33_mul.c: Reduce local scratch space.
+	* mpn/generic/toom32_mul.c: Rewrite to not use local scratch space.
+
+2009-06-02  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/toom22_mul.c (TOOM22_MUL_MN_REC): New macro, use it for
+	oo point.
+
+2009-06-01  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/mul.c: Loop to avoid excessive recursion in toom33 and
+	toom44 slicing code.
+
+	* mpz/remove.c: Correctly handle multiplicity that does not fit an int.
+
+	* Makefile.am (dist-hook): Check library version consistency.
+
+	* mpn/generic/mul.c: Rewrite.
+
+2009-05-29  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tests/mpz/t-divis.c (check_random): Create huge test operands.
+
+	* mpn/generic/toom44_mul.c: Allocate temp space using one TMP_ALLOC
+	call, not multiple TMP_SALLOC.
+	* mpn/generic/toom4_sqr.c: Likewise.
+
+	* gmp-impl.h (mpn_toom22_mul_itch): Replace totally wrong code.
+
+	* mpn/generic/mullow_n.c: Relax overlap requirement implied by ASSERT.
+
+	* mpn/generic/divis.c: Rewrite.
+
+	* gmp-impl.h (mpn_mu_bdiv_qr): Now returns mp_limb_t.
+	(mpn_toom2_sqr_itch): Simplify.
+
+	* mpn/generic/mu_bdiv_qr.c: Implement properly.
+
+2009-05-27  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/generic/mod_1_1.c: Add proper ASSERT functionality cps function.
+	* mpn/generic/mod_1_2.c: Likewise.
+	* mpn/generic/mod_1_3.c: Likewise.
+	* mpn/generic/mod_1_4.c: Likewise.
+
+	* tune: Add speed measuring of toom22, toom33, and toom44.
+
+	* mpn/generic/toom22_mul.c: Handle potentially unbalanced coefficient
+	product better.
+
+2009-05-26  Torbjorn Granlund  <tege@gmplib.org>
+
+	* tests/mpz/t-mul.c (ref_mpn_mul): Use mpn_toom44_mul in FFT range for
+	better huge-operands performance.
+
+2009-05-24  Torbjorn Granlund  <tege@gmplib.org>
+
+	* acinclude.m4 (GMP_ASM_LSYM_PREFIX): Try "$L" too, before "$".
+
+2009-05-23  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-impl.h (mpn_mod_1s_1p,mpn_mod_1s_2p,mpn_mod_1s_3p,mpn_mod_1s_4p):
+	Declare using __GMP_ATTRIBUTE_PURE.
+
+	* tune/tuneup.c (tune_mod_1): Specify check_size for measuring mod_1_N
+	functions.
+	(one): Remove redundant size loop exit condition.
+
+2009-05-20  Torbjorn Granlund  <tege@gmplib.org>
+
+	* mpn/x86/pentium4/sse2/mod_1_4.asm: New file.
+	* mpn/x86/p6/sse2/mod_1_4.asm: New file (grabbing pentium4 code).
+
+2009-05-18  Torbjorn Granlund  <tege@gmplib.org>
+
+	* gmp-h.in (__GNU_MP_VERSION_MINOR): Bump to 4.
+	(__GNU_MP_VERSION_PATCHLEVEL): Set to -1.
+
+	* mpn/x86_64/mod_1_4.asm: New file.
+
+	* mpn/asm-defs.m4: Correct names for mod_1_N functions.
+	Add defines for corresponding cps functions.
+
+	* mpn/generic/mod_1_2.c: Support any sizes > 1.
+	* mpn/generic/mod_1_3.c: Likewise.
+	* mpn/generic/mod_1_4.c: Likewise.
+
 2009-05-12  Torbjorn Granlund  <tege@gmplib.org>
 
 	* Version 4.3.1 released.
@@ -67,7 +2427,7 @@
 
 2009-04-26  Torbjorn Granlund  <tege@gmplib.org>
 
-	* config.guess: Recognize more POWER processor types.
+	* config.guess: Recognise more POWER processor types.
 
 2009-04-25  Torbjorn Granlund  <tege@gmplib.org>
 
@@ -89,6 +2449,9 @@
 	* mpn/x86_64/x86_64-defs.m4 (JUMPTABSECT): New define.
 	* mpn/x86_64/darwin.m4: Likewise.
 	* mpn/x86_64/sqr_basecase.asm: Rework switch code using JUMPTABSECT.
+
+	* tune/common.c (speed_mpn_hgcd, speed_mpn_hgcd_lehmer):
+	Remove an unused variable.
 
 	* mpn/x86/x86-defs.m4 (LEA): Get SIZE arguments right.
 
@@ -130,7 +2493,7 @@
 
 2009-03-09  Torbjorn Granlund  <tege@gmplib.org>
 
-	* mpn/x86_64/divrem_1.asm: Add a nop to save a cycle in unnormalized
+	* mpn/x86_64/divrem_1.asm: Add a nop to save a cycle in unnormalised
 	case.
 
 2009-03-05  Torbjorn Granlund  <tege@gmplib.org>
@@ -190,7 +2553,7 @@
 	* tune/tuneup.c (tune_mod_1): Run MOD_1_x_THRESHOLD tests also when
 	longlong.h specified UDIV_PREINV_ALWAYS.
 
-	* mpn/generic/mod_1.c (mpn_mod_1): Properly check for normalization
+	* mpn/generic/mod_1.c (mpn_mod_1): Properly check for normalisation
 	divisor.
 
 2009-01-13  Torbjorn Granlund  <tege@gmplib.org>
@@ -1317,7 +3680,7 @@
 
 	* mpn/x86/p6/aors_n.asm: Table cycle counts.
 
-	* mpn/x86/k7/mod_34lsub1.asm: Fix over-optimisitc cycle count claims.
+	* mpn/x86/k7/mod_34lsub1.asm: Fix over-optimistic cycle count claims.
 
 	* mpn/x86/x86-defs.m4 (DEF_OBJECT, END_OBJECT): New define's.
 
@@ -1362,12 +3725,12 @@
 
 	* mpz/get_str.c: Cast a char index to int to shut up compilers.
 
-	* dc_div_qr.c: Pass dummy scratch argument to mpn_invert.
-	* dc_divappr_q.c: Likewise.
-	* mu_div_qr.c: Likewise.
-	* mu_divappr_q.c: Likewise.
-	* mu_div_q.c: Likewise.
-	* divexact.c: Likewise.
+	* mpn/generic/dc_div_qr.c: Pass dummy scratch argument to mpn_invert.
+	* mpn/generic/dc_divappr_q.c: Likewise.
+	* mpn/generic/mu_div_qr.c: Likewise.
+	* mpn/generic/mu_divappr_q.c: Likewise.
+	* mpn/generic/mu_div_q.c: Likewise.
+	* mpn/generic/divexact.c: Likewise.
 
 	* mpn/generic/invert.c: New file, placeholder for now.
 
@@ -3214,7 +5577,7 @@
 	(what_objects): Only demand 9 object files, as for instance occurs in
 	the scanf directory.
 	(asm files): Transform labels L(foo) -> Lfoo.  Take func name from
-	PROLOGUE to support empty "EPILOGUE()".  Recognise and subsitute
+	PROLOGUE to support empty "EPILOGUE()".  Recognise and substitute
 	register name "define()"s.
 	* macos/Makefile.in (CmnObjs): Add tal-notreent.o.
 
@@ -3637,7 +6000,7 @@
 	* tests/mpn/t-hgcd.c: Remove unused variables.
 
 	* mpn/ia64/hamdist.asm: Remove bundling incompatible with HP-UX
-	assember.  Misc HP-UX changes.
+	assembler.  Misc HP-UX changes.
 	* mpn/ia64/gcd_1.asm: Add some syntax to placid the HP-UX assembler.
 
 2004-02-11  Kevin Ryde  <kevin@swox.se>
@@ -3790,7 +6153,7 @@
 	* tune/common.c (speed_mpn_hgcd_lehmer): Disabled function.
 
 	* mpn/generic/hgcd.c (mpn_hgcd_lehmer_itch, mpn_hgcd_lehmer)
-	(mpn_hgcd_equal):  Deleted functions.
+	(mpn_hgcd_equal): Deleted functions.
 
 	* mpn/generic/gcd.c (hgcd_start_row_p): Deleted function.
 	(gcd_schoenhage): Deleted assertion code using mpn_hgcd_lehmer.
@@ -4855,7 +7218,7 @@
 
 2003-10-21  Torbjorn Granlund  <tege@swox.com>
 
-	* mpn/ia64/submul_1.asm: Slightly reschedule loop to accomodate
+	* mpn/ia64/submul_1.asm: Slightly reschedule loop to accommodate
 	Itanium 2 getf.sig latency.
 
 2003-10-21  Kevin Ryde  <kevin@swox.se>
@@ -7476,7 +9839,7 @@
 	* tune/tuneup.c (sqr_karatsuba_threshold): Initialize to
 	TUNE_SQR_KARATSUBA_MAX so mpn_sqr_n works for randmt initialization.
 
-	* gmp.texi (Integer Comparisons): Remove mention of non-existant
+	* gmp.texi (Integer Comparisons): Remove mention of non-existent
 	mpz_cmpabs_si, reported by Conrad Curry.
 
 	* tune/speed.c, tune/speed.h, tune/common.c: Add gmp_randseed,
@@ -15328,7 +17691,7 @@
 
 	* mp.h (mp_set_memory_functions): Add missing #define.
 	* mpbsd/tests/allfuns.c (mp_set_memory_functions): Verify its
-	existance.
+	existence.
 
 	* mpf/tests/t-misc.c (check_mpf_getset_prec): New test, verifying
 	reverted behaviour of mpf_get_prec.
@@ -16635,7 +18998,7 @@
 	* mpn/powerpc32: Use dnl/C instead of `#' for comments.
 
 	* config.guess: Get "model" limit between pentium 2 and pentium3 right.
-	Get rid of code determining `_' prefix;	use double labels instead.
+	Get rid of code determining `_' prefix; use double labels instead.
 	* config.guess: Partially merge with FSF version of April 22.
 	(Don't bring over NetBSD changes for now.)
 
@@ -17441,7 +19804,7 @@
 
 	* randraw.c (gmp_rand_getraw): Handle the case where (1) the LC
 	scheme doesn't generate even limbs and (2) more than one LC
-	invokation is necessary to produce the requested number of bits.
+	invocation is necessary to produce the requested number of bits.
 
 2000-04-05  Torbjorn Granlund  <tege@swox.com>
 
@@ -19493,7 +21856,7 @@ Wed Mar  4 19:29:16 1998  Torbjorn Granlund  <tege@matematik.su.se>
 	* configure.in (i[3456]86* etc): Check if using gcc before
 	choosing mt-x86.
 
-	* configure.in (m68*-*-*): New alterantive.
+	* configure.in (m68*-*-*): New alternative.
 	* config/mt-m68k: New file.
 
 	* mpn/alpha/invert-limb.s: Put tables in text segment,
@@ -19817,7 +22180,7 @@ Fri Oct 18 03:13:54 1996  Torbjorn Granlund  <tege@quiet.matematik.su.se>
 	* mpn/x86/pentium/[lr]shift.S: Likewise.
 	* mpn/config/t-oldgas (SFLAGS): Pass -DOLD_GAS.
 
-	* gmp-impl.h: In code for determining endianess, test also
+	* gmp-impl.h: In code for determining endianness, test also
 	__BIG_ENDIAN__ and __hppa__.  Remove test of __NeXT__.
 
 Wed Oct 16 03:50:34 1996  Torbjorn Granlund  <tege@quiet.matematik.su.se>
@@ -23093,7 +25456,7 @@ Thu Jul 11 10:08:21 1991  Torbjorn Granlund  (tege@zevs.sics.se)
 	* dist-Makefile: Go via tmp- files for cre* redirection.
 	* dist-Makefile: Add tmp* to "clean" target.
 
-	* dist-Makefile: Use LOCAL_CC for cre*, to simplyfy cross
+	* dist-Makefile: Use LOCAL_CC for cre*, to simplify cross
 	  compilation.
 
 	* gmp.h, mp.h: Don't define NULL here.
@@ -23331,7 +25694,7 @@ Sun Apr 28 20:21:04 1991  Torbjorn Granlund  (tege@zevs.sics.se)
 
 Sat Apr 27 21:03:11 1991  Torbjorn Granlund  (tege@zevs.sics.se)
 
-	* Install multplication using Karatsuba's algorithm as default.
+	* Install multiplication using Karatsuba's algorithm as default.
 
 Fri Apr 26 01:03:57 1991  Torbjorn Granlund  (tege@zevs.sics.se)
 
@@ -23349,7 +25712,7 @@ Wed Apr 24 21:39:22 1991  Torbjorn Granlund  (tege@zevs.sics.se)
 
 Mon Apr 22 01:31:57 1991  Torbjorn Granlund  (tege@zevs.sics.se)
 
-	* karatsuba.c: New file for Karatsuba's multplication algorithm.
+	* karatsuba.c: New file for Karatsuba's multiplication algorithm.
 
 	* mpz_random, mpz_init, mpz_mod_2exp: New files and functions.
 
@@ -23444,7 +25807,7 @@ Fri Mar 15 00:26:29 1991  Torbjorn Granlund  (tege@musta.nada.kth.se)
 
 Thu Mar 14 18:45:28 1991  Torbjorn Granlund  (tege@musta.nada.kth.se)
 
-	* mpq_mul.c: New file for rational multplication.
+	* mpq_mul.c: New file for rational multiplication.
 
 	* gmp.h: Add definitions for rational arithmetics.
 

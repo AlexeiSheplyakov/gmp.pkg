@@ -165,7 +165,7 @@ check_tstbit (void)
 	  if (low1)
 	    pos[0] |= 1;
 
-	  refmpn_neg_n (neg, pos, (mp_size_t) numberof(neg));
+	  refmpn_neg (neg, pos, (mp_size_t) numberof(neg));
 	  mpz_set_n (z, neg, (mp_size_t) numberof(neg));
 	  mpz_neg (z, z);
 
@@ -207,7 +207,7 @@ check_single (void)
 	    {
 	      mpz_set_si (x, (long) initial);
 
-	      bit = (unsigned long) limb*BITS_PER_MP_LIMB + offset;
+	      bit = (unsigned long) limb*GMP_LIMB_BITS + offset;
 
 	      mpz_clrbit (x, bit);
 	      MPZ_CHECK_FORMAT (x);

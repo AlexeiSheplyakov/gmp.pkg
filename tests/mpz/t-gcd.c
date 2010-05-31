@@ -80,7 +80,7 @@ check_data (void)
 
 /* Keep one_test's variables global, so that we don't need
    to reinitialize them for each test.  */
-mpz_t gcd1, gcd2, s, t, temp1, temp2;
+mpz_t gcd1, gcd2, s, t, temp1, temp2, temp3;
 
 #if GCD_DC_THRESHOLD > GCDEXT_DC_THRESHOLD
 #define MAX_SCHOENHAGE_THRESHOLD GCD_DC_THRESHOLD
@@ -108,12 +108,11 @@ main (int argc, char **argv)
   gmp_randstate_ptr rands;
   mpz_t bs;
   unsigned long bsi, size_range;
-  int reps = 100;
-
-  if (argc == 2)
-     reps = atoi (argv[1]);
+  int reps = 200;
 
   tests_start ();
+  TESTS_REPS (reps, argv, argc);
+
   rands = RANDS;
 
   check_data ();
@@ -126,8 +125,16 @@ main (int argc, char **argv)
   mpz_init (gcd2);
   mpz_init (temp1);
   mpz_init (temp2);
+  mpz_init (temp3);
   mpz_init (s);
   mpz_init (t);
+
+  /* Testcase to exercise the u0 == u1 case in mpn_gcdext_lehmer_n. */
+  mpz_set_ui (op2, GMP_NUMB_MAX);
+  mpz_mul_2exp (op1, op2, 100);
+  mpz_add (op1, op1, op2);
+  mpz_mul_ui (op2, op2, 2);
+  one_test (op1, op2, NULL, -1);
 
 #if 0
   mpz_set_str (op1, "4da8e405e0d2f70d6d679d3de08a5100a81ec2cff40f97b313ae75e1183f1df2b244e194ebb02a4ece50d943640a301f0f6cc7f539117b783c3f3a3f91649f8a00d2e1444d52722810562bce02fccdbbc8fe3276646e306e723dd3b", 16);
@@ -144,7 +151,7 @@ main (int argc, char **argv)
 	 of that other ASSERTs are triggered before it.  */
 
       mpz_urandomb (bs, rands, 32);
-      size_range = mpz_get_ui (bs) % 13 + 2;
+      size_range = mpz_get_ui (bs) % 17 + 2;
 
       mpz_urandomb (bs, rands, size_range);
       mpz_urandomb (op1, rands, mpz_get_ui (bs) + MIN_OPERAND_BITSIZE);
@@ -218,6 +225,7 @@ main (int argc, char **argv)
   mpz_clear (gcd2);
   mpz_clear (temp1);
   mpz_clear (temp2);
+  mpz_clear (temp3);
   mpz_clear (s);
   mpz_clear (t);
 
@@ -326,7 +334,7 @@ one_test (mpz_t op1, mpz_t op2, mpz_t ref, int i)
 }
 
 /* Called when g is supposed to be gcd(a,b), and g = s a + t b, for some t.
-   Uses temp1 and temp2 */
+   Uses temp1, temp2 and temp3. */
 static int
 gcdext_valid_p (const mpz_t a, const mpz_t b, const mpz_t g, const mpz_t s)
 {
@@ -350,14 +358,36 @@ gcdext_valid_p (const mpz_t a, const mpz_t b, const mpz_t g, const mpz_t s)
   if (mpz_sgn (g) <= 0)
     return 0;
 
-  if (! (mpz_divisible_p (a, g)
-	 && mpz_divisible_p (b, g)
-	 && mpz_cmpabs (s, b) <= 0))
+  mpz_tdiv_qr (temp1, temp3, a, g);
+  if (mpz_sgn (temp3) != 0)
     return 0;
 
-  mpz_mul(temp1, s, a);
-  mpz_sub(temp1, g, temp1);
-  mpz_tdiv_qr(temp1, temp2, temp1, b);
+  mpz_tdiv_qr (temp2, temp3, b, g);
+  if (mpz_sgn (temp3) != 0)
+    return 0;
 
-  return mpz_sgn (temp2) == 0 && mpz_cmpabs (temp1, a) <= 0;
+  /* Require that 2 |s| < |b/g|, or |s| == 1. */
+  if (mpz_cmpabs_ui (s, 1) > 0)
+    {
+      mpz_mul_2exp (temp3, s, 1);
+      if (mpz_cmpabs (temp3, temp2) > 0)
+	return 0;
+    }
+
+  /* Compute the other cofactor. */
+  mpz_mul(temp2, s, a);
+  mpz_sub(temp2, g, temp2);
+  mpz_tdiv_qr(temp2, temp3, temp2, b);
+
+  if (mpz_sgn (temp3) != 0)
+    return 0;
+
+  /* Require that 2 |t| < |a/g| or |t| == 1*/
+  if (mpz_cmpabs_ui (temp2, 1) > 0)
+    {
+      mpz_mul_2exp (temp2, temp2, 1);
+      if (mpz_cmpabs (temp2, temp1) > 0)
+	return 0;
+    }
+  return 1;
 }

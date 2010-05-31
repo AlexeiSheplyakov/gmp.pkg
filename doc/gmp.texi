@@ -15,10 +15,10 @@ This manual describes how to install and use the GNU multiple precision
 arithmetic library, version @value{VERSION}.
 
 Copyright 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document under
-the terms of the GNU Free Documentation License, Version 1.2 or any later
+the terms of the GNU Free Documentation License, Version 1.3 or any later
 version published by the Free Software Foundation; with no Invariant Sections,
 with the Front-Cover Texts being ``A GNU Manual'', and with the Back-Cover
 Texts being ``You have freedom to copy and modify this GNU Manual, like GNU
@@ -91,8 +91,8 @@ How to install and use the GNU multiple precision arithmetic library, version @v
 @subtitle Edition @value{EDITION}
 @subtitle @value{UPDATED}
 
-@author by The GMP developers
-@c @email{tege@@gmplib.org}
+@author by Torbj@"orn Granlund and the GMP development team
+@c @email{tg@@gmplib.org}
 
 @c Include the Distribution inside the titlepage so
 @c that headings are turned off.
@@ -1528,12 +1528,6 @@ involving a @code{double} cannot be expected to operate to their full
 precision when the hardware is in single precision mode.  Of course this
 affects all code, including application code, not just GMP.
 
-@item MacOS 9
-@cindex MacOS 9
-The @file{macos} directory contains an unsupported port to MacOS 9 on Power
-Macintosh, see @file{macos/README}.  Note that MacOS X ``Darwin'' should use
-the normal Unix-style @samp{./configure}.
-
 @item MS-DOS and MS Windows
 @cindex MS-DOS
 @cindex MS Windows
@@ -1939,9 +1933,15 @@ analogous to a digit, only larger, and containing several digits.)  Normally a
 limb is 32 or 64 bits.  The C data type for a limb is @code{mp_limb_t}.
 
 @tindex @code{mp_size_t}
-Counts of limbs are represented in the C type @code{mp_size_t}.  Currently
-this is normally a @code{long}, but on some systems it's an @code{int} for
-efficiency.
+Counts of limbs of a multi-precision number represented in the C type
+@code{mp_size_t}.  Currently this is normally a @code{long}, but on some
+systems it's an @code{int} for efficiency, and on some systems it will be
+@code{long long} in the future.
+
+@tindex @code{mp_bitcnt_t}
+Counts of bits of a multi-precision number are represented in the C type
+@code{mp_bitcnt_t}.  Currently this is always an @code{unsigned long}, but on
+some systems it will be an @code{unsigned long long} in the future .
 
 @cindex Random state
 @tindex @code{gmp_randstate_t}
@@ -1952,7 +1952,7 @@ data type for such objects is @code{gmp_randstate_t}.  For example:
 gmp_randstate_t rstate;
 @end example
 
-Also, in general @code{unsigned long} is used for bit counts and ranges, and
+Also, in general @code{mp_bitcnt_t} is used for bit counts and ranges, and
 @code{size_t} is used for byte or character counts.
 
 
@@ -2210,6 +2210,12 @@ The GMP version number, as a null-terminated string, in the form ``i.j.k''.
 This release is @nicode{"@value{VERSION}"}.  Note that the format ``i.j'' was
 used when k was zero was used before version 4.3.0.
 @end deftypevr
+
+@defmac __GMP_CC
+@defmacx __GMP_CFLAGS
+The compiler and compiler flags, respectively, used when compiling GMP, as
+strings.
+@end defmac
 
 
 @node Compatibility with older versions, Demonstration Programs, Useful Macros and Constants, GMP Basics
@@ -2988,31 +2994,43 @@ example,
 As you can see, you can store new values any number of times, once an
 object is initialized.
 
-@deftypefun void mpz_init (mpz_t @var{integer})
-Initialize @var{integer}, and set its value to 0.
+@deftypefun void mpz_init (mpz_t @var{x})
+Initialize @var{x}, and set its value to 0.
 @end deftypefun
 
-@deftypefun void mpz_init2 (mpz_t @var{integer}, unsigned long @var{n})
-Initialize @var{integer}, with space for @var{n} bits, and set its value to 0.
+@deftypefun void mpz_inits (mpz_t @var{x}, ...)
+Initialize a NULL-terminated list of @code{mpz_t} variables, and set their
+values to 0.
+@end deftypefun
 
-@var{n} is only the initial space, @var{integer} will grow automatically in
+@deftypefun void mpz_init2 (mpz_t @var{x}, mp_bitcnt_t @var{n})
+Initialize @var{x}, with space for @var{n}-bit numbers, and set its value to 0.
+Calling this function instead of @code{mpz_init} or @code{mpz_inits} is never
+necessary; reallocation is handled automatically by GMP when needed.
+
+@var{n} is only the initial space, @var{x} will grow automatically in
 the normal way, if necessary, for subsequent values stored.  @code{mpz_init2}
 makes it possible to avoid such reallocations if a maximum size is known in
 advance.
 @end deftypefun
 
-@deftypefun void mpz_clear (mpz_t @var{integer})
-Free the space occupied by @var{integer}.  Call this function for all
-@code{mpz_t} variables when you are done with them.
+@deftypefun void mpz_clear (mpz_t @var{x})
+Free the space occupied by @var{x}.  Call this function for all @code{mpz_t}
+variables when you are done with them.
 @end deftypefun
 
-@deftypefun void mpz_realloc2 (mpz_t @var{integer}, unsigned long @var{n})
-Change the space allocated for @var{integer} to @var{n} bits.  The value in
-@var{integer} is preserved if it fits, or is set to 0 if not.
+@deftypefun void mpz_clears (mpz_t @var{x}, ...)
+Free the space occupied by a NULL-terminated list of @code{mpz_t} variables.
+@end deftypefun
 
-This function can be used to increase the space for a variable in order to
-avoid repeated automatic reallocations, or to decrease it to give memory back
-to the heap.
+@deftypefun void mpz_realloc2 (mpz_t @var{x}, mp_bitcnt_t @var{n})
+Change the space allocated for @var{x} to @var{n} bits.  The value in @var{x}
+is preserved if it fits, or is set to 0 if not.
+
+Calling this function is never necessary; reallocation is handled automatically
+by GMP when needed.  But this function can be used to increase the space for a
+variable in order to avoid repeated automatic reallocations, or to decrease it
+to give memory back to the heap.
 @end deftypefun
 
 
@@ -3223,7 +3241,7 @@ Set @var{rop} to @math{@var{rop} + @var{op1} @GMPtimes{} @var{op2}}.
 Set @var{rop} to @math{@var{rop} - @var{op1} @GMPtimes{} @var{op2}}.
 @end deftypefun
 
-@deftypefun void mpz_mul_2exp (mpz_t @var{rop}, mpz_t @var{op1}, unsigned long int @var{op2})
+@deftypefun void mpz_mul_2exp (mpz_t @var{rop}, mpz_t @var{op1}, mp_bitcnt_t @var{op2})
 @cindex Bit shift left
 Set @var{rop} to @m{@var{op1} \times 2^{op2}, @var{op1} times 2 raised to
 @var{op2}}.  This operation can also be defined as a left shift by @var{op2}
@@ -3264,8 +3282,8 @@ same way as for normal C @code{int} arithmetic.
 @deftypefunx {unsigned long int} mpz_cdiv_qr_ui (mpz_t @var{q}, mpz_t @var{r}, @w{mpz_t @var{n}}, @w{unsigned long int @var{d}})
 @deftypefunx {unsigned long int} mpz_cdiv_ui (mpz_t @var{n}, @w{unsigned long int @var{d}})
 @maybepagebreak
-@deftypefunx void mpz_cdiv_q_2exp (mpz_t @var{q}, mpz_t @var{n}, @w{unsigned long int @var{b}})
-@deftypefunx void mpz_cdiv_r_2exp (mpz_t @var{r}, mpz_t @var{n}, @w{unsigned long int @var{b}})
+@deftypefunx void mpz_cdiv_q_2exp (mpz_t @var{q}, mpz_t @var{n}, @w{mp_bitcnt_t @var{b}})
+@deftypefunx void mpz_cdiv_r_2exp (mpz_t @var{r}, mpz_t @var{n}, @w{mp_bitcnt_t @var{b}})
 @end deftypefun
 
 @deftypefun void mpz_fdiv_q (mpz_t @var{q}, mpz_t @var{n}, mpz_t @var{d})
@@ -3277,8 +3295,8 @@ same way as for normal C @code{int} arithmetic.
 @deftypefunx {unsigned long int} mpz_fdiv_qr_ui (mpz_t @var{q}, mpz_t @var{r}, @w{mpz_t @var{n}}, @w{unsigned long int @var{d}})
 @deftypefunx {unsigned long int} mpz_fdiv_ui (mpz_t @var{n}, @w{unsigned long int @var{d}})
 @maybepagebreak
-@deftypefunx void mpz_fdiv_q_2exp (mpz_t @var{q}, mpz_t @var{n}, @w{unsigned long int @var{b}})
-@deftypefunx void mpz_fdiv_r_2exp (mpz_t @var{r}, mpz_t @var{n}, @w{unsigned long int @var{b}})
+@deftypefunx void mpz_fdiv_q_2exp (mpz_t @var{q}, mpz_t @var{n}, @w{mp_bitcnt_t @var{b}})
+@deftypefunx void mpz_fdiv_r_2exp (mpz_t @var{r}, mpz_t @var{n}, @w{mp_bitcnt_t @var{b}})
 @end deftypefun
 
 @deftypefun void mpz_tdiv_q (mpz_t @var{q}, mpz_t @var{n}, mpz_t @var{d})
@@ -3290,8 +3308,8 @@ same way as for normal C @code{int} arithmetic.
 @deftypefunx {unsigned long int} mpz_tdiv_qr_ui (mpz_t @var{q}, mpz_t @var{r}, @w{mpz_t @var{n}}, @w{unsigned long int @var{d}})
 @deftypefunx {unsigned long int} mpz_tdiv_ui (mpz_t @var{n}, @w{unsigned long int @var{d}})
 @maybepagebreak
-@deftypefunx void mpz_tdiv_q_2exp (mpz_t @var{q}, mpz_t @var{n}, @w{unsigned long int @var{b}})
-@deftypefunx void mpz_tdiv_r_2exp (mpz_t @var{r}, mpz_t @var{n}, @w{unsigned long int @var{b}})
+@deftypefunx void mpz_tdiv_q_2exp (mpz_t @var{q}, mpz_t @var{n}, @w{mp_bitcnt_t @var{b}})
+@deftypefunx void mpz_tdiv_r_2exp (mpz_t @var{r}, mpz_t @var{n}, @w{mp_bitcnt_t @var{b}})
 @cindex Bit shift right
 
 @sp 1
@@ -3362,7 +3380,7 @@ rational to lowest terms.
 
 @deftypefun int mpz_divisible_p (mpz_t @var{n}, mpz_t @var{d})
 @deftypefunx int mpz_divisible_ui_p (mpz_t @var{n}, unsigned long int @var{d})
-@deftypefunx int mpz_divisible_2exp_p (mpz_t @var{n}, unsigned long int @var{b})
+@deftypefunx int mpz_divisible_2exp_p (mpz_t @var{n}, mp_bitcnt_t @var{b})
 @cindex Divisibility functions
 Return non-zero if @var{n} is exactly divisible by @var{d}, or in the case of
 @code{mpz_divisible_2exp_p} by @m{2^b,2^@var{b}}.
@@ -3375,7 +3393,7 @@ that only 0 is considered divisible by 0.
 
 @deftypefun int mpz_congruent_p (mpz_t @var{n}, mpz_t @var{c}, mpz_t @var{d})
 @deftypefunx int mpz_congruent_ui_p (mpz_t @var{n}, unsigned long int @var{c}, unsigned long int @var{d})
-@deftypefunx int mpz_congruent_2exp_p (mpz_t @var{n}, mpz_t @var{c}, unsigned long int @var{b})
+@deftypefunx int mpz_congruent_2exp_p (mpz_t @var{n}, mpz_t @var{c}, mp_bitcnt_t @var{b})
 @cindex Divisibility functions
 @cindex Congruence functions
 Return non-zero if @var{n} is congruent to @var{c} modulo @var{d}, or in the
@@ -3404,6 +3422,19 @@ modulo @var{mod}}.
 Negative @var{exp} is supported if an inverse @math{@var{base}^@W{-1} @bmod
 @var{mod}} exists (see @code{mpz_invert} in @ref{Number Theoretic Functions}).
 If an inverse doesn't exist then a divide by zero is raised.
+@end deftypefun
+
+@deftypefun void mpz_powm_sec (mpz_t @var{rop}, mpz_t @var{base}, mpz_t @var{exp}, mpz_t @var{mod})
+Set @var{rop} to @m{base^{exp} \bmod mod, (@var{base} raised to @var{exp})
+modulo @var{mod}}.
+
+It is required that @math{@var{exp} > 0} and that @var{mod} is odd.
+
+This function is designed to take the same time and have the same cache access
+patterns for any two same-size arguments, assuming that function arguments are
+placed at the same position and that the machine state is identical upon
+function entry.  This function is intended for cryptographic purposes, where
+resilience to side-channel attacks is desired.
 @end deftypefun
 
 @deftypefun void mpz_pow_ui (mpz_t @var{rop}, mpz_t @var{base}, unsigned long int @var{exp})
@@ -3597,7 +3628,7 @@ or any number theory textbook.  See also the example program
 @file{demos/qcn.c} which uses @code{mpz_kronecker_ui}.
 @end deftypefun
 
-@deftypefun {unsigned long int} mpz_remove (mpz_t @var{rop}, mpz_t @var{op}, mpz_t @var{f})
+@deftypefun {mp_bitcnt_t} mpz_remove (mpz_t @var{rop}, mpz_t @var{op}, mpz_t @var{f})
 @cindex Remove factor functions
 @cindex Factor removal functions
 Remove all occurrences of the factor @var{f} from @var{op} and store the
@@ -3723,24 +3754,23 @@ Set @var{rop} to @var{op1} bitwise exclusive-or @var{op2}.
 Set @var{rop} to the one's complement of @var{op}.
 @end deftypefun
 
-@deftypefun {unsigned long int} mpz_popcount (mpz_t @var{op})
-If @math{@var{op}@ge{}0}, return the population count of @var{op}, which is
-the number of 1 bits in the binary representation.  If @math{@var{op}<0}, the
-number of 1s is infinite, and the return value is @var{ULONG_MAX}, the largest
-possible @code{unsigned long}.
+@deftypefun {mp_bitcnt_t} mpz_popcount (mpz_t @var{op})
+If @math{@var{op}@ge{}0}, return the population count of @var{op}, which is the
+number of 1 bits in the binary representation.  If @math{@var{op}<0}, the
+number of 1s is infinite, and the return value is the largest possible
+@code{mp_bitcnt_t}.
 @end deftypefun
 
-@deftypefun {unsigned long int} mpz_hamdist (mpz_t @var{op1}, mpz_t @var{op2})
-If @var{op1} and @var{op2} are both @math{@ge{}0} or both @math{<0}, return
-the hamming distance between the two operands, which is the number of bit
-positions where @var{op1} and @var{op2} have different bit values.  If one
-operand is @math{@ge{}0} and the other @math{<0} then the number of bits
-different is infinite, and the return value is @var{ULONG_MAX}, the largest
-possible @code{unsigned long}.
+@deftypefun {mp_bitcnt_t} mpz_hamdist (mpz_t @var{op1}, mpz_t @var{op2})
+If @var{op1} and @var{op2} are both @math{@ge{}0} or both @math{<0}, return the
+hamming distance between the two operands, which is the number of bit positions
+where @var{op1} and @var{op2} have different bit values.  If one operand is
+@math{@ge{}0} and the other @math{<0} then the number of bits different is
+infinite, and the return value is the largest possible @code{mp_bitcnt_t}.
 @end deftypefun
 
-@deftypefun {unsigned long int} mpz_scan0 (mpz_t @var{op}, unsigned long int @var{starting_bit})
-@deftypefunx {unsigned long int} mpz_scan1 (mpz_t @var{op}, unsigned long int @var{starting_bit})
+@deftypefun {mp_bitcnt_t} mpz_scan0 (mpz_t @var{op}, mp_bitcnt_t @var{starting_bit})
+@deftypefunx {mp_bitcnt_t} mpz_scan1 (mpz_t @var{op}, mp_bitcnt_t @var{starting_bit})
 @cindex Bit scanning functions
 @cindex Scan bit functions
 Scan @var{op}, starting from bit @var{starting_bit}, towards more significant
@@ -3750,24 +3780,24 @@ the found bit.
 If the bit at @var{starting_bit} is already what's sought, then
 @var{starting_bit} is returned.
 
-If there's no bit found, then @var{ULONG_MAX} is returned.  This will happen
-in @code{mpz_scan0} past the end of a negative number, or @code{mpz_scan1}
-past the end of a nonnegative number.
+If there's no bit found, then the largest possible @code{mp_bitcnt_t} is
+returned.  This will happen in @code{mpz_scan0} past the end of a negative
+number, or @code{mpz_scan1} past the end of a nonnegative number.
 @end deftypefun
 
-@deftypefun void mpz_setbit (mpz_t @var{rop}, unsigned long int @var{bit_index})
+@deftypefun void mpz_setbit (mpz_t @var{rop}, mp_bitcnt_t @var{bit_index})
 Set bit @var{bit_index} in @var{rop}.
 @end deftypefun
 
-@deftypefun void mpz_clrbit (mpz_t @var{rop}, unsigned long int @var{bit_index})
+@deftypefun void mpz_clrbit (mpz_t @var{rop}, mp_bitcnt_t @var{bit_index})
 Clear bit @var{bit_index} in @var{rop}.
 @end deftypefun
 
-@deftypefun void mpz_combit (mpz_t @var{rop}, unsigned long int @var{bit_index})
+@deftypefun void mpz_combit (mpz_t @var{rop}, mp_bitcnt_t @var{bit_index})
 Complement bit @var{bit_index} in @var{rop}.
 @end deftypefun
 
-@deftypefun int mpz_tstbit (mpz_t @var{op}, unsigned long int @var{bit_index})
+@deftypefun int mpz_tstbit (mpz_t @var{op}, mp_bitcnt_t @var{bit_index})
 Test bit @var{bit_index} in @var{op} and return 0 or 1 accordingly.
 @end deftypefun
 
@@ -3854,7 +3884,7 @@ parameter that is read and modified.  Please see the @ref{Random Number
 Functions} for more information on how to use and not to use random
 number functions.
 
-@deftypefun void mpz_urandomb (mpz_t @var{rop}, gmp_randstate_t @var{state}, unsigned long int @var{n})
+@deftypefun void mpz_urandomb (mpz_t @var{rop}, gmp_randstate_t @var{state}, mp_bitcnt_t @var{n})
 Generate a uniformly distributed random integer in the range 0 to @m{2^n-1,
 2^@var{n}@minus{}1}, inclusive.
 
@@ -3872,7 +3902,7 @@ The variable @var{state} must be initialized by calling one of the
 before invoking this function.
 @end deftypefun
 
-@deftypefun void mpz_rrandomb (mpz_t @var{rop}, gmp_randstate_t @var{state}, unsigned long int @var{n})
+@deftypefun void mpz_rrandomb (mpz_t @var{rop}, gmp_randstate_t @var{state}, mp_bitcnt_t @var{n})
 Generate a random integer with long strings of zeros and ones in the
 binary representation.  Useful for testing functions and algorithms,
 since this kind of random numbers have proven to be more likely to
@@ -3933,7 +3963,7 @@ significant element first, and host byte order within each value.
 
 @example
 unsigned long  a[20];
-mpz_t          z;
+/* Initialize @var{z} and @var{a} */
 mpz_import (z, 20, 1, sizeof(a[0]), 0, 0, a);
 @end example
 
@@ -4166,15 +4196,24 @@ Remove any factors that are common to the numerator and denominator of
 @cindex Rational initialization functions
 @cindex Initialization functions
 
-@deftypefun void mpq_init (mpq_t @var{dest_rational})
-Initialize @var{dest_rational} and set it to 0/1.  Each variable should
-normally only be initialized once, or at least cleared out (using the function
-@code{mpq_clear}) between each initialization.
+@deftypefun void mpq_init (mpq_t @var{x})
+Initialize @var{x} and set it to 0/1.  Each variable should normally only be
+initialized once, or at least cleared out (using the function @code{mpq_clear})
+between each initialization.
 @end deftypefun
 
-@deftypefun void mpq_clear (mpq_t @var{rational_number})
-Free the space occupied by @var{rational_number}.  Make sure to call this
-function for all @code{mpq_t} variables when you are done with them.
+@deftypefun void mpq_inits (mpq_t @var{x}, ...)
+Initialize a NULL-terminated list of @code{mpq_t} variables, and set their
+values to 0/1.
+@end deftypefun
+
+@deftypefun void mpq_clear (mpq_t @var{x})
+Free the space occupied by @var{x}.  Make sure to call this function for all
+@code{mpq_t} variables when you are done with them.
+@end deftypefun
+
+@deftypefun void mpq_clears (mpq_t @var{x}, ...)
+Free the space occupied by a NULL-terminated list of @code{mpq_t} variables.
 @end deftypefun
 
 @deftypefun void mpq_set (mpq_t @var{rop}, mpq_t @var{op})
@@ -4281,7 +4320,7 @@ Set @var{difference} to @var{minuend} @minus{} @var{subtrahend}.
 Set @var{product} to @math{@var{multiplier} @GMPtimes{} @var{multiplicand}}.
 @end deftypefun
 
-@deftypefun void mpq_mul_2exp (mpq_t @var{rop}, mpq_t @var{op1}, unsigned long int @var{op2})
+@deftypefun void mpq_mul_2exp (mpq_t @var{rop}, mpq_t @var{op1}, mp_bitcnt_t @var{op2})
 Set @var{rop} to @m{@var{op1} \times 2^{op2}, @var{op1} times 2 raised to
 @var{op2}}.
 @end deftypefun
@@ -4291,7 +4330,7 @@ Set @var{rop} to @m{@var{op1} \times 2^{op2}, @var{op1} times 2 raised to
 Set @var{quotient} to @var{dividend}/@var{divisor}.
 @end deftypefun
 
-@deftypefun void mpq_div_2exp (mpq_t @var{rop}, mpq_t @var{op1}, unsigned long int @var{op2})
+@deftypefun void mpq_div_2exp (mpq_t @var{rop}, mpq_t @var{op1}, mp_bitcnt_t @var{op2})
 Set @var{rop} to @m{@var{op1}/2^{op2}, @var{op1} divided by 2 raised to
 @var{op2}}.
 @end deftypefun
@@ -4503,13 +4542,13 @@ size.
 @cindex Float initialization functions
 @cindex Initialization functions
 
-@deftypefun void mpf_set_default_prec (unsigned long int @var{prec})
+@deftypefun void mpf_set_default_prec (mp_bitcnt_t @var{prec})
 Set the default precision to be @strong{at least} @var{prec} bits.  All
 subsequent calls to @code{mpf_init} will use this precision, but previously
 initialized variables are unaffected.
 @end deftypefun
 
-@deftypefun {unsigned long int} mpf_get_default_prec (void)
+@deftypefun {mp_bitcnt_t} mpf_get_default_prec (void)
 Return the default precision actually used.
 @end deftypefun
 
@@ -4524,15 +4563,26 @@ precision of @var{x} is undefined unless a default precision has already been
 established by a call to @code{mpf_set_default_prec}.
 @end deftypefun
 
-@deftypefun void mpf_init2 (mpf_t @var{x}, unsigned long int @var{prec})
+@deftypefun void mpf_init2 (mpf_t @var{x}, mp_bitcnt_t @var{prec})
 Initialize @var{x} to 0 and set its precision to be @strong{at least}
 @var{prec} bits.  Normally, a variable should be initialized once only or at
 least be cleared, using @code{mpf_clear}, between initializations.
 @end deftypefun
 
+@deftypefun void mpf_inits (mpf_t @var{x}, ...)
+Initialize a NULL-terminated list of @code{mpf_t} variables, and set their
+values to 0.  The precision of the initialized variables is undefined unless a
+default precision has already been established by a call to
+@code{mpf_set_default_prec}.
+@end deftypefun
+
 @deftypefun void mpf_clear (mpf_t @var{x})
 Free the space occupied by @var{x}.  Make sure to call this function for all
 @code{mpf_t} variables when you are done with them.
+@end deftypefun
+
+@deftypefun void mpf_clears (mpf_t @var{x}, ...)
+Free the space occupied by a NULL-terminated list of @code{mpf_t} variables.
 @end deftypefun
 
 @need 2000
@@ -4554,11 +4604,11 @@ calculation.  A typical use would be for adjusting the precision gradually in
 iterative algorithms like Newton-Raphson, making the computation precision
 closely match the actual accurate part of the numbers.
 
-@deftypefun {unsigned long int} mpf_get_prec (mpf_t @var{op})
+@deftypefun {mp_bitcnt_t} mpf_get_prec (mpf_t @var{op})
 Return the current precision of @var{op}, in bits.
 @end deftypefun
 
-@deftypefun void mpf_set_prec (mpf_t @var{rop}, unsigned long int @var{prec})
+@deftypefun void mpf_set_prec (mpf_t @var{rop}, mp_bitcnt_t @var{prec})
 Set the precision of @var{rop} to be @strong{at least} @var{prec} bits.  The
 value in @var{rop} will be truncated to the new precision.
 
@@ -4566,7 +4616,7 @@ This function requires a call to @code{realloc}, and so should not be used in
 a tight loop.
 @end deftypefun
 
-@deftypefun void mpf_set_prec_raw (mpf_t @var{rop}, unsigned long int @var{prec})
+@deftypefun void mpf_set_prec_raw (mpf_t @var{rop}, mp_bitcnt_t @var{prec})
 Set the precision of @var{rop} to be @strong{at least} @var{prec} bits,
 without changing the memory allocated.
 
@@ -4819,12 +4869,12 @@ Set @var{rop} to @minus{}@var{op}.
 Set @var{rop} to the absolute value of @var{op}.
 @end deftypefun
 
-@deftypefun void mpf_mul_2exp (mpf_t @var{rop}, mpf_t @var{op1}, unsigned long int @var{op2})
+@deftypefun void mpf_mul_2exp (mpf_t @var{rop}, mpf_t @var{op1}, mp_bitcnt_t @var{op2})
 Set @var{rop} to @m{@var{op1} \times 2^{op2}, @var{op1} times 2 raised to
 @var{op2}}.
 @end deftypefun
 
-@deftypefun void mpf_div_2exp (mpf_t @var{rop}, mpf_t @var{op1}, unsigned long int @var{op2})
+@deftypefun void mpf_div_2exp (mpf_t @var{rop}, mpf_t @var{op1}, mp_bitcnt_t @var{op2})
 Set @var{rop} to @m{@var{op1}/2^{op2}, @var{op1} divided by 2 raised to
 @var{op2}}.
 @end deftypefun
@@ -4847,7 +4897,7 @@ Compare @var{op1} and @var{op2}.  Return a positive value if @math{@var{op1} >
 a NaN.
 @end deftypefun
 
-@deftypefun int mpf_eq (mpf_t @var{op1}, mpf_t @var{op2}, unsigned long int op3)
+@deftypefun int mpf_eq (mpf_t @var{op1}, mpf_t @var{op2}, mp_bitcnt_t op3)
 Return non-zero if the first @var{op3} bits of @var{op1} and @var{op2} are
 equal, zero otherwise.  I.e., test if @var{op1} and @var{op2} are approximately
 equal.
@@ -4975,7 +5025,7 @@ Return non-zero if @var{op} would fit in the respective C data type, when
 truncated to an integer.
 @end deftypefun
 
-@deftypefun void mpf_urandomb (mpf_t @var{rop}, gmp_randstate_t @var{state}, unsigned long int @var{nbits})
+@deftypefun void mpf_urandomb (mpf_t @var{rop}, gmp_randstate_t @var{state}, mp_bitcnt_t @var{nbits})
 @cindex Random number functions
 @cindex Float random number functions
 Generate a uniformly distributed random float in @var{rop}, such that @math{0
@@ -5117,6 +5167,11 @@ This function requires that @var{s1n} is greater than or equal to
 @var{s2n}.
 @end deftypefun
 
+@deftypefun void mpn_neg (mp_limb_t *@var{rp}, const mp_limb_t *@var{sp}, mp_size_t @var{n})
+Perform the negation of @{@var{sp}, @var{n}@}, and write the result to
+@{@var{rp}, @var{n}@}.  Return carry-out.
+@end deftypefun
+
 @deftypefun void mpn_mul_n (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, const mp_limb_t *@var{s2p}, mp_size_t @var{n})
 Multiply @{@var{s1p}, @var{n}@} and @{@var{s2p}, @var{n}@}, and write the
 2*@var{n}-limb result to @var{rp}.
@@ -5124,6 +5179,29 @@ Multiply @{@var{s1p}, @var{n}@} and @{@var{s2p}, @var{n}@}, and write the
 The destination has to have space for 2*@var{n} limbs, even if the product's
 most significant limb is zero.  No overlap is permitted between the
 destination and either source.
+
+If the two input operands are the same, use @code{mpn_sqr}.
+@end deftypefun
+
+@deftypefun mp_limb_t mpn_mul (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, mp_size_t @var{s1n}, const mp_limb_t *@var{s2p}, mp_size_t @var{s2n})
+Multiply @{@var{s1p}, @var{s1n}@} and @{@var{s2p}, @var{s2n}@}, and write the
+(@var{s1n}+@var{s2n})-limb result to @var{rp}.  Return the most significant
+limb of the result.
+
+The destination has to have space for @var{s1n} + @var{s2n} limbs, even if the
+product's most significant limb is zero.  No overlap is permitted between the
+destination and either source.
+
+This function requires that @var{s1n} is greater than or equal to @var{s2n}.
+@end deftypefun
+
+@deftypefun void mpn_sqr (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, mp_size_t @var{n})
+Compute the square of @{@var{s1p}, @var{n}@} and write the 2*@var{n}-limb
+result to @var{rp}.
+
+The destination has to have space for 2*@var{n} limbs, even if the result's
+most significant limb is zero.  No overlap is permitted between the
+destination and the source.
 @end deftypefun
 
 @deftypefun mp_limb_t mpn_mul_1 (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, mp_size_t @var{n}, mp_limb_t @var{s2limb})
@@ -5162,26 +5240,15 @@ multiplication and division as well as other operations in GMP@.  It is written
 in assembly for most CPUs.
 @end deftypefun
 
-@deftypefun mp_limb_t mpn_mul (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, mp_size_t @var{s1n}, const mp_limb_t *@var{s2p}, mp_size_t @var{s2n})
-Multiply @{@var{s1p}, @var{s1n}@} and @{@var{s2p}, @var{s2n}@}, and write the
-result to @var{rp}.  Return the most significant limb of the result.
-
-The destination has to have space for @var{s1n} + @var{s2n} limbs, even if the
-result might be one limb smaller.
-
-This function requires that @var{s1n} is greater than or equal to
-@var{s2n}.  The destination must be distinct from both input operands.
-@end deftypefun
-
 @deftypefun void mpn_tdiv_qr (mp_limb_t *@var{qp}, mp_limb_t *@var{rp}, mp_size_t @var{qxn}, const mp_limb_t *@var{np}, mp_size_t @var{nn}, const mp_limb_t *@var{dp}, mp_size_t @var{dn})
 Divide @{@var{np}, @var{nn}@} by @{@var{dp}, @var{dn}@} and put the quotient
 at @{@var{qp}, @var{nn}@minus{}@var{dn}+1@} and the remainder at @{@var{rp},
 @var{dn}@}.  The quotient is rounded towards 0.
 
-No overlap is permitted between arguments.  @var{nn} must be greater than or
-equal to @var{dn}.  The most significant limb of @var{dp} must be non-zero.
-The @var{qxn} operand must be zero.
-@comment FIXME: Relax overlap requirements!
+No overlap is permitted between arguments, except that @var{np} might equal
+@var{rp}.  The dividend size @var{nn} must be greater than or equal to divisor
+size @var{dn}.  The most significant limb of the divisor must be non-zero.  The
+@var{qxn} operand must be zero.
 @end deftypefun
 
 @deftypefun mp_limb_t mpn_divrem (mp_limb_t *@var{r1p}, mp_size_t @var{qxn}, mp_limb_t *@var{rs2p}, mp_size_t @var{rs2n}, const mp_limb_t *@var{s3p}, mp_size_t @var{s3n})
@@ -5260,27 +5327,6 @@ Divide @{@var{s1p}, @var{s1n}@} by @var{s2limb}, and return the remainder.
 @var{s1n} can be zero.
 @end deftypefun
 
-@deftypefun mp_limb_t mpn_bdivmod (mp_limb_t *@var{rp}, mp_limb_t *@var{s1p}, mp_size_t @var{s1n}, const mp_limb_t *@var{s2p}, mp_size_t @var{s2n}, unsigned long int @var{d})
-This function puts the low
-@math{@GMPfloor{@var{d}/@nicode{mp\_bits\_per\_limb}}} limbs of @var{q} =
-@{@var{s1p}, @var{s1n}@}/@{@var{s2p}, @var{s2n}@} mod @m{2^d,2^@var{d}} at
-@var{rp}, and returns the high @var{d} mod @code{mp_bits_per_limb} bits of
-@var{q}.
-
-@{@var{s1p}, @var{s1n}@} - @var{q} * @{@var{s2p}, @var{s2n}@} mod @m{2
-\GMPraise{@var{s1n}*@code{mp\_bits\_per\_limb}},
-2^(@var{s1n}*@nicode{mp\_bits\_per\_limb})} is placed at @var{s1p}.  Since the
-low @math{@GMPfloor{@var{d}/@nicode{mp\_bits\_per\_limb}}} limbs of this
-difference are zero, it is possible to overwrite the low limbs at @var{s1p}
-with this difference, provided @math{@var{rp} @le{} @var{s1p}}.
-
-This function requires that @math{@var{s1n} * @nicode{mp\_bits\_per\_limb}
-@ge{} @var{D}}, and that @{@var{s2p}, @var{s2n}@} is odd.
-
-@strong{This interface is preliminary.  It might change incompatibly in future
-revisions.}
-@end deftypefun
-
 @deftypefun mp_limb_t mpn_lshift (mp_limb_t *@var{rp}, const mp_limb_t *@var{sp}, mp_size_t @var{n}, unsigned int @var{count})
 Shift @{@var{sp}, @var{n}@} left by @var{count} bits, and write the result to
 @{@var{rp}, @var{n}@}.  The bits shifted out at the left are returned in the
@@ -5313,40 +5359,47 @@ positive value if @math{@var{s1} > @var{s2}}, 0 if they are equal, or a
 negative value if @math{@var{s1} < @var{s2}}.
 @end deftypefun
 
-@deftypefun mp_size_t mpn_gcd (mp_limb_t *@var{rp}, mp_limb_t *@var{s1p}, mp_size_t @var{s1n}, mp_limb_t *@var{s2p}, mp_size_t @var{s2n})
-Set @{@var{rp}, @var{retval}@} to the greatest common divisor of @{@var{s1p},
-@var{s1n}@} and @{@var{s2p}, @var{s2n}@}.  The result can be up to @var{s2n}
-limbs, the return value is the actual number produced.  Both source operands
-are destroyed.
+@deftypefun mp_size_t mpn_gcd (mp_limb_t *@var{rp}, mp_limb_t *@var{xp}, mp_size_t @var{xn}, mp_limb_t *@var{yp}, mp_size_t @var{yn})
+Set @{@var{rp}, @var{retval}@} to the greatest common divisor of @{@var{xp},
+@var{xn}@} and @{@var{yp}, @var{yn}@}.  The result can be up to @var{yn} limbs,
+the return value is the actual number produced.  Both source operands are
+destroyed.
 
-@{@var{s1p}, @var{s1n}@} must have at least as many bits as @{@var{s2p},
-@var{s2n}@}.  @{@var{s2p}, @var{s2n}@} must be odd.  Both operands must have
-non-zero most significant limbs.  No overlap is permitted between @{@var{s1p},
-@var{s1n}@} and @{@var{s2p}, @var{s2n}@}.
+@{@var{xp}, @var{xn}@} must have at least as many bits as @{@var{yp},
+@var{yn}@}.  @{@var{yp}, @var{yn}@} must be odd.  Both operands must have
+non-zero most significant limbs.  No overlap is permitted between @{@var{xp},
+@var{xn}@} and @{@var{yp}, @var{yn}@}.
 @end deftypefun
 
-@deftypefun mp_limb_t mpn_gcd_1 (const mp_limb_t *@var{s1p}, mp_size_t @var{s1n}, mp_limb_t @var{s2limb})
-Return the greatest common divisor of @{@var{s1p}, @var{s1n}@} and
-@var{s2limb}.  Both operands must be non-zero.
+@deftypefun mp_limb_t mpn_gcd_1 (const mp_limb_t *@var{xp}, mp_size_t @var{xn}, mp_limb_t @var{ylimb})
+Return the greatest common divisor of @{@var{xp}, @var{xn}@} and @var{ylimb}.
+Both operands must be non-zero.
 @end deftypefun
 
-@deftypefun mp_size_t mpn_gcdext (mp_limb_t *@var{r1p}, mp_limb_t *@var{r2p}, mp_size_t *@var{r2n}, mp_limb_t *@var{s1p}, mp_size_t @var{s1n}, mp_limb_t *@var{s2p}, mp_size_t @var{s2n})
-Calculate the greatest common divisor of @{@var{s1p}, @var{s1n}@} and
-@{@var{s2p}, @var{s2n}@}.  Store the gcd at @{@var{r1p}, @var{retval}@} and
-the first cofactor at @{@var{r2p}, *@var{r2n}@}, with *@var{r2n} negative if
-the cofactor is negative.  @var{r1p} and @var{r2p} should each have room for
-@math{@var{s1n}+1} limbs, but the return value and value stored through
-@var{r2n} indicate the actual number produced.
+@deftypefun mp_size_t mpn_gcdext (mp_limb_t *@var{gp}, mp_limb_t *@var{sp}, mp_size_t *@var{sn}, mp_limb_t *@var{xp}, mp_size_t @var{xn}, mp_limb_t *@var{yp}, mp_size_t @var{yn})
+Let @m{U,@var{U}} be defined by @{@var{xp}, @var{xn}@} and let @m{V,@var{V}} be
+defined by @{@var{yp}, @var{yn}@}.
 
-@math{@{@var{s1p}, @var{s1n}@} @ge{} @{@var{s2p}, @var{s2n}@}} is required,
-and both must be non-zero.  The regions @{@var{s1p}, @math{@var{s1n}+1}@} and
-@{@var{s2p}, @math{@var{s2n}+1}@} are destroyed (i.e.@: the operands plus an
-extra limb past the end of each).
+Compute the greatest common divisor @math{G} of @math{U} and @math{V}.  Compute
+a cofactor @math{S} such that @math{G = US + VT}.  The second cofactor @var{T}
+is not computed but can easily be obtained from @m{(G - US) / V, (@var{G} -
+@var{U}*@var{S}) / @var{V}} (the division will be exact).  It is required that
+@math{U @ge V > 0}.
 
-The cofactor @var{r2} will satisfy @m{r_2 s_1 + k s_2 = r_1, @var{r2}*@var{s1}
-+ @var{k}*@var{s2} = @var{r1}}.  The second cofactor @var{k} is not calculated
-but can easily be obtained from @m{(r_1 - r_2 s_1) / s_2, (@var{r1} -
-@var{r2}*@var{s1}) / @var{s2}} (this division will be exact).
+@math{S} satisfies @math{S = 1} or @math{@GMPabs{S} < V / (2 G)}. @math{S =
+0} if and only if @math{V} divides @math{U} (i.e., @math{G = V}).
+
+Store @math{G} at @var{gp} and let the return value define its limb count.
+Store @math{S} at @var{sp} and let |*@var{sn}| define its limb count.  @math{S}
+can be negative; when this happens *@var{sn} will be negative.  The areas at
+@var{gp} and @var{sp} should each have room for @math{@var{xn}+1} limbs.
+
+The areas @{@var{xp}, @math{@var{xn}+1}@} and @{@var{yp}, @math{@var{yn}+1}@}
+are destroyed (i.e.@: the input operands plus an extra limb past the end of
+each).
+
+Compatibility note: GMP 4.3.0 and 4.3.1 defined @math{S} less strictly.
+Earlier as well as later GMP releases define @math{S} as described here.
 @end deftypefun
 
 @deftypefun mp_size_t mpn_sqrtrem (mp_limb_t *@var{r1p}, mp_limb_t *@var{r2p}, const mp_limb_t *@var{sp}, mp_size_t @var{n})
@@ -5403,14 +5456,14 @@ written to @var{rp} and included in the return value.
 @{@var{str},@var{strsize}@} and the result at @var{rp}.
 @end deftypefun
 
-@deftypefun {unsigned long int} mpn_scan0 (const mp_limb_t *@var{s1p}, unsigned long int @var{bit})
+@deftypefun {mp_bitcnt_t} mpn_scan0 (const mp_limb_t *@var{s1p}, mp_bitcnt_t @var{bit})
 Scan @var{s1p} from bit position @var{bit} for the next clear bit.
 
 It is required that there be a clear bit within the area at @var{s1p} at or
 beyond bit position @var{bit}, so that the function has something to return.
 @end deftypefun
 
-@deftypefun {unsigned long int} mpn_scan1 (const mp_limb_t *@var{s1p}, unsigned long int @var{bit})
+@deftypefun {mp_bitcnt_t} mpn_scan1 (const mp_limb_t *@var{s1p}, mp_bitcnt_t @var{bit})
 Scan @var{s1p} from bit position @var{bit} for the next set bit.
 
 It is required that there be a set bit within the area at @var{s1p} at or
@@ -5428,11 +5481,11 @@ zeros and ones in the binary representation.
 routines.
 @end deftypefun
 
-@deftypefun {unsigned long int} mpn_popcount (const mp_limb_t *@var{s1p}, mp_size_t @var{n})
+@deftypefun {mp_bitcnt_t} mpn_popcount (const mp_limb_t *@var{s1p}, mp_size_t @var{n})
 Count the number of set bits in @{@var{s1p}, @var{n}@}.
 @end deftypefun
 
-@deftypefun {unsigned long int} mpn_hamdist (const mp_limb_t *@var{s1p}, const mp_limb_t *@var{s2p}, mp_size_t @var{n})
+@deftypefun {mp_bitcnt_t} mpn_hamdist (const mp_limb_t *@var{s1p}, const mp_limb_t *@var{s2p}, mp_size_t @var{n})
 Compute the hamming distance between @{@var{s1p}, @var{n}@} and @{@var{s2p},
 @var{n}@}, which is the number of bit positions where the two operands have
 different bit values.
@@ -5442,6 +5495,64 @@ different bit values.
 Return non-zero iff @{@var{s1p}, @var{n}@} is a perfect square.
 @end deftypefun
 
+@deftypefun void mpn_and_n (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, const mp_limb_t *@var{s2p}, mp_size_t @var{n})
+Perform the bitwise logical and of @{@var{s1p}, @var{n}@} and @{@var{s2p},
+@var{n}@}, and write the result to @{@var{rp}, @var{n}@}.
+@end deftypefun
+
+@deftypefun void mpn_ior_n (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, const mp_limb_t *@var{s2p}, mp_size_t @var{n})
+Perform the bitwise logical inclusive or of @{@var{s1p}, @var{n}@} and
+@{@var{s2p}, @var{n}@}, and write the result to @{@var{rp}, @var{n}@}.
+@end deftypefun
+
+@deftypefun void mpn_xor_n (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, const mp_limb_t *@var{s2p}, mp_size_t @var{n})
+Perform the bitwise logical exclusive or of @{@var{s1p}, @var{n}@} and
+@{@var{s2p}, @var{n}@}, and write the result to @{@var{rp}, @var{n}@}.
+@end deftypefun
+
+@deftypefun void mpn_andn_n (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, const mp_limb_t *@var{s2p}, mp_size_t @var{n})
+Perform the bitwise logical and of @{@var{s1p}, @var{n}@} and the bitwise
+complement of @{@var{s2p}, @var{n}@}, and write the result to @{@var{rp}, @var{n}@}.
+@end deftypefun
+
+@deftypefun void mpn_iorn_n (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, const mp_limb_t *@var{s2p}, mp_size_t @var{n})
+Perform the bitwise logical inclusive or of @{@var{s1p}, @var{n}@} and the bitwise
+complement of @{@var{s2p}, @var{n}@}, and write the result to @{@var{rp}, @var{n}@}.
+@end deftypefun
+
+@deftypefun void mpn_nand_n (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, const mp_limb_t *@var{s2p}, mp_size_t @var{n})
+Perform the bitwise logical and of @{@var{s1p}, @var{n}@} and @{@var{s2p},
+@var{n}@}, and write the bitwise complement of the result to @{@var{rp}, @var{n}@}.
+@end deftypefun
+
+@deftypefun void mpn_nior_n (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, const mp_limb_t *@var{s2p}, mp_size_t @var{n})
+Perform the bitwise logical inclusive or of @{@var{s1p}, @var{n}@} and
+@{@var{s2p}, @var{n}@}, and write the bitwise complement of the result to
+@{@var{rp}, @var{n}@}.
+@end deftypefun
+
+@deftypefun void mpn_xnor_n (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, const mp_limb_t *@var{s2p}, mp_size_t @var{n})
+Perform the bitwise logical exclusive or of @{@var{s1p}, @var{n}@} and
+@{@var{s2p}, @var{n}@}, and write the bitwise complement of the result to
+@{@var{rp}, @var{n}@}.
+@end deftypefun
+
+@deftypefun void mpn_com (mp_limb_t *@var{rp}, const mp_limb_t *@var{sp}, mp_size_t @var{n})
+Perform the bitwise complement of @{@var{sp}, @var{n}@}, and write the result
+to @{@var{rp}, @var{n}@}.
+@end deftypefun
+
+@deftypefun void mpn_copyi (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, mp_size_t @var{n})
+Copy from @{@var{s1p}, @var{n}@} to @{@var{rp}, @var{n}@}, increasingly.
+@end deftypefun
+
+@deftypefun void mpn_copyd (mp_limb_t *@var{rp}, const mp_limb_t *@var{s1p}, mp_size_t @var{n})
+Copy from @{@var{s1p}, @var{n}@} to @{@var{rp}, @var{n}@}, decreasingly.
+@end deftypefun
+
+@deftypefun void mpn_zero (mp_limb_t *@var{rp}, mp_size_t @var{n})
+Zero @{@var{rp}, @var{n}@}.
+@end deftypefun
 
 @sp 1
 @section Nails
@@ -5553,7 +5664,7 @@ Initialize @var{state} for a Mersenne Twister algorithm.  This algorithm is
 fast and has good randomness properties.
 @end deftypefun
 
-@deftypefun void gmp_randinit_lc_2exp (gmp_randstate_t @var{state}, mpz_t @var{a}, @w{unsigned long @var{c}}, @w{unsigned long @var{m2exp}})
+@deftypefun void gmp_randinit_lc_2exp (gmp_randstate_t @var{state}, mpz_t @var{a}, @w{unsigned long @var{c}}, @w{mp_bitcnt_t @var{m2exp}})
 @cindex Linear congruential random numbers
 Initialize @var{state} with a linear congruential algorithm @m{X = (@var{a}X +
 @var{c}) @bmod 2^{m2exp}, X = (@var{a}*X + @var{c}) mod 2^@var{m2exp}}.
@@ -5568,7 +5679,7 @@ generated, multiple iterations of the recurrence are used and the results
 concatenated.
 @end deftypefun
 
-@deftypefun int gmp_randinit_lc_2exp_size (gmp_randstate_t @var{state}, unsigned long @var{size})
+@deftypefun int gmp_randinit_lc_2exp_size (gmp_randstate_t @var{state}, mp_bitcnt_t @var{size})
 @cindex Linear congruential random numbers
 Initialize @var{state} for a linear congruential algorithm as per
 @code{gmp_randinit_lc_2exp}.  @var{a}, @var{c} and @var{m2exp} are selected
@@ -6665,9 +6776,9 @@ except @code{long long} and @code{long double}.
 The accuracy provided by @code{hypot} is not currently guaranteed.
 @end deftypefun
 
-@deftypefun {unsigned long int} mpf_class::get_prec ()
-@deftypefunx void mpf_class::set_prec (unsigned long @var{prec})
-@deftypefunx void mpf_class::set_prec_raw (unsigned long @var{prec})
+@deftypefun {mp_bitcnt_t} mpf_class::get_prec ()
+@deftypefunx void mpf_class::set_prec (mp_bitcnt_t @var{prec})
+@deftypefunx void mpf_class::set_prec_raw (mp_bitcnt_t @var{prec})
 Get or set the current precision of an @code{mpf_class}.
 
 The restrictions described for @code{mpf_set_prec_raw} (@pxref{Initializing
@@ -7297,7 +7408,7 @@ algorithms, as the size N increases.
 @multitable {KaratsubaMMM} {MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM}
 @item Algorithm @tab Threshold
 @item Basecase  @tab (none)
-@item Karatsuba @tab @code{MUL_KARATSUBA_THRESHOLD}
+@item Karatsuba @tab @code{MUL_TOOM22_THRESHOLD}
 @item Toom-3    @tab @code{MUL_TOOM33_THRESHOLD}
 @item Toom-4    @tab @code{MUL_TOOM44_THRESHOLD}
 @item FFT       @tab @code{MUL_FFT_THRESHOLD}
@@ -7307,7 +7418,7 @@ algorithms, as the size N increases.
 Similarly for squaring, with the @code{SQR} thresholds.
 
 N@cross{}M multiplications of operands with different sizes above
-@code{MUL_KARATSUBA_THRESHOLD} are currently done by special Toom-inspired
+@code{MUL_TOOM22_THRESHOLD} are currently done by special Toom-inspired
 algorithms or directly with FFT, depending on operand size (@pxref{Unbalanced
 Multiplication}).
 
@@ -7556,7 +7667,7 @@ Karatsuba multiplication is asymptotically an @math{O(N^@W{1.585})} algorithm,
 the exponent being @m{\log3/\log2,log(3)/log(2)}, representing 3 multiplies
 each @math{1/2} the size of the inputs.  This is a big improvement over the
 basecase multiply at @math{O(N^2)} and the advantage soon overcomes the extra
-additions Karatsuba performs.  @code{MUL_KARATSUBA_THRESHOLD} can be as little
+additions Karatsuba performs.  @code{MUL_TOOM22_THRESHOLD} can be as little
 as 10 limbs.  The @code{SQR} threshold is usually about twice the @code{MUL}.
 
 The basecase algorithm will take a time of the form @m{M(N) = aN^2 + bN + c,
@@ -7902,13 +8013,13 @@ The points used for the evaluation are @math{g^i} for @math{i=0} to
 @math{2^k-1} where @m{g=2^{2N'/2^k}, g=2^(2N'/2^k)}.  @math{g} is a
 @m{2^k,2^k'}th root of unity mod @m{2^{N'}+1,2^N'+1}, which produces necessary
 cancellations at the interpolation stage, and it's also a power of 2 so the
-fast fourier transforms used for the evaluation and interpolation do only
+fast Fourier transforms used for the evaluation and interpolation do only
 shifts, adds and negations.
 
 The pointwise multiplications are done modulo @m{2^{N'}+1, 2^N'+1} and either
 recurse into a further FFT or use a plain multiplication (Toom-3, Karatsuba or
 basecase), whichever is optimal at the size @math{N'}.  The interpolation is
-an inverse fast fourier transform.  The resulting set of sums of @m{x_iy_j,
+an inverse fast Fourier transform.  The resulting set of sums of @m{x_iy_j,
 x[i]*y[j]} are added at appropriate offsets to give the final result.
 
 Squaring is the same, but @math{x} is the only input so it's one transform at
@@ -8000,10 +8111,10 @@ Splitting odd and even parts through positive and negative points can be
 thought of as using @math{-1} as a square root of unity.  If a 4th root of
 unity was available then a further split and speedup would be possible, but no
 such root exists for plain integers.  Going to complex integers with
-@m{i=\sqrt{-1}, i=sqrt(-1)} doesn't help, essentially because in cartesian
+@m{i=\sqrt{-1}, i=sqrt(-1)} doesn't help, essentially because in Cartesian
 form it takes three real multiplies to do a complex multiply.  The existence
 of @m{2^k,2^k'}th roots of unity in a suitable ring or field lets the fast
-fourier transform keep splitting and get to @m{O(N \log r), O(N*log(r))}.
+Fourier transform keep splitting and get to @m{O(N \log r), O(N*log(r))}.
 
 Floating point FFTs use complex numbers approximating Nth roots of unity.
 Some processors have special support for such FFTs.  But these are not used in
@@ -8018,7 +8129,7 @@ GMP.
 @cindex Unbalanced multiplication
 
 Multiplication of operands with different sizes, both below
-@code{MUL_KARATSUBA_THRESHOLD} are done with plain schoolbook multiplication
+@code{MUL_TOOM22_THRESHOLD} are done with plain schoolbook multiplication
 (@pxref{Basecase Multiplication}).
 
 For really large operands, we invoke FFT directly.
@@ -8043,6 +8154,7 @@ can be split into 2, 3, or 4 coefficients, i.e., a polynomial of degree 1 to
 * Single Limb Division::
 * Basecase Division::
 * Divide and Conquer Division::
+* Block-Wise Barrett Division::
 * Exact Division::
 * Exact Remainder::
 * Small Quotient Division::
@@ -8056,14 +8168,14 @@ N@cross{}1 division is implemented using repeated 2@cross{}1 divisions from
 high to low, either with a hardware divide instruction or a multiplication by
 inverse, whichever is best on a given CPU.
 
-The multiply by inverse follows section 8 of ``Division by Invariant Integers
-using Multiplication'' by Granlund and Montgomery (@pxref{References}) and is
-implemented as @code{udiv_qrnnd_preinv} in @file{gmp-impl.h}.  The idea is to
-have a fixed-point approximation to @math{1/d} (see @code{invert_limb}) and
-then multiply by the high limb (plus one bit) of the dividend to get a
-quotient @math{q}.  With @math{d} normalized (high bit set), @math{q} is no
-more than 1 too small.  Subtracting @m{qd,q*d} from the dividend gives a
-remainder, and reveals whether @math{q} or @math{q-1} is correct.
+The multiply by inverse follows ``Improved division by invariant integers'' by
+M@"oller and Granlund (@pxref{References}) and is implemented as
+@code{udiv_qrnnd_preinv} in @file{gmp-impl.h}.  The idea is to have a
+fixed-point approximation to @math{1/d} (see @code{invert_limb}) and then
+multiply by the high limb (plus one bit) of the dividend to get a quotient
+@math{q}.  With @math{d} normalized (high bit set), @math{q} is no more than 1
+too small.  Subtracting @m{qd,q*d} from the dividend gives a remainder, and
+reveals whether @math{q} or @math{q-1} is correct.
 
 The result is a division done with two multiplications and four or five
 arithmetic operations.  On CPUs with low latency multipliers this can be much
@@ -8123,10 +8235,10 @@ Q@cross{}M multiplication, differing in fact only in the extra multiply and
 divide for each of the Q quotient limbs.
 
 
-@node Divide and Conquer Division, Exact Division, Basecase Division, Division Algorithms
+@node Divide and Conquer Division, Block-Wise Barrett Division, Basecase Division, Division Algorithms
 @subsection Divide and Conquer Division
 
-For divisors larger than @code{DIV_DC_THRESHOLD}, division is done by dividing.
+For divisors larger than @code{DC_DIV_QR_THRESHOLD}, division is done by dividing.
 Or to be precise by a recursive divide and conquer algorithm based on work by
 Moenck and Borodin, Jebelean, and Burnikel and Ziegler (@pxref{References}).
 
@@ -8142,11 +8254,11 @@ If the (N/2)@cross{}(N/2) multiplies are done with a basecase multiplication
 then the work is about the same as a basecase division, but with more function
 call overheads and with some subtractions separated from the multiplies.
 These overheads mean that it's only when N/2 is above
-@code{MUL_KARATSUBA_THRESHOLD} that divide and conquer is of use.
+@code{MUL_TOOM22_THRESHOLD} that divide and conquer is of use.
 
-@code{DIV_DC_THRESHOLD} is based on the divisor size N, so it will be somewhere
-above twice @code{MUL_KARATSUBA_THRESHOLD}, but how much above depends on the
-CPU@.  An optimized @code{mpn_mul_basecase} can lower @code{DIV_DC_THRESHOLD} a
+@code{DC_DIV_QR_THRESHOLD} is based on the divisor size N, so it will be somewhere
+above twice @code{MUL_TOOM22_THRESHOLD}, but how much above depends on the
+CPU@.  An optimized @code{mpn_mul_basecase} can lower @code{DC_DIV_QR_THRESHOLD} a
 little by offering a ready-made advantage over repeated @code{mpn_submul_1}
 calls.
 
@@ -8159,13 +8271,23 @@ algorithms the @math{M(N)} term improves and the multiplier tends to @m{\log
 N, log(N)}.  In practice, at moderate to large sizes, a 2N@cross{}N division
 is about 2 to 4 times slower than an N@cross{}N multiplication.
 
-Newton's method used for division is asymptotically @math{O(M(N))} and should
-therefore be superior to divide and conquer, but it's believed this would only
-be for large to very large N.
+
+@node Block-Wise Barrett Division, Exact Division, Divide and Conquer Division, Division Algorithms
+@subsection Block-Wise Barrett Division
+
+For the largest divisions, a block-wise Barrett division algorithm is used.
+Here, the divisor is inverted to a precision determined by the relative size of
+the dividend and divisor.  Blocks of quotient limbs are then generated by
+multiplying blocks from the dividend by the inverse.
+
+Our block-wise algorithm computes a smaller inverse than in the plain Barrett
+algorithm.  For a @math{2n/n} division, the inverse will be just @m{\lceil n/2
+\rceil, ceil(n/2)} limbs.
 
 
-@node Exact Division, Exact Remainder, Divide and Conquer Division, Division Algorithms
+@node Exact Division, Exact Remainder, Block-Wise Barrett Division, Division Algorithms
 @subsection Exact Division
+
 
 A so-called exact division is when the dividend is known to be an exact
 multiple of the divisor.  Jebelean's exact division algorithm uses this
@@ -8202,7 +8324,7 @@ Q*(Q-1)/2}.  Notice the savings are complementary.  If Q is big then many
 divisions are saved, or if Q is small then the crossproducts reduce to a small
 number.
 
-The modular inverse used is calculated efficiently by @code{modlimb_invert} in
+The modular inverse used is calculated efficiently by @code{binvert_limb} in
 @file{gmp-impl.h}.  This does four multiplies for a 32-bit limb, or six for a
 64-bit limb.  @file{tune/modlinv.c} has some alternate implementations that
 might suit processors better at bit twiddling than multiplying.
@@ -8255,10 +8377,9 @@ products must be done as a normal division, but there's still some single limb
 divisions saved.  When @math{d} is a single limb some simplifications arise,
 providing good speedups on a number of processors.
 
-@code{mpn_bdivmod}, @code{mpn_divexact_by3}, @code{mpn_modexact_1_odd} and the
-@code{redc} function in @code{mpz_powm} differ subtly in how they return
-@math{r}, leading to some negations in the above formula, but all are
-essentially the same.
+@code{mpn_divexact_by3}, @code{mpn_modexact_1_odd} and the @code{mpn_redc_X}
+functions differ subtly in how they return @math{r}, leading to some negations
+in the above formula, but all are essentially the same.
 
 @cindex Divisibility algorithm
 @cindex Congruence algorithm
@@ -8267,9 +8388,8 @@ leads to divisibility or congruence tests which are potentially more efficient
 than a normal division.
 
 The factor of @math{b^n} on @math{r} can be ignored in a GCD when @math{d} is
-odd, hence the use of @code{mpn_bdivmod} in @code{mpn_gcd}, and the use of
-@code{mpn_modexact_1_odd} by @code{mpn_gcd_1} and @code{mpz_kronecker_ui} etc
-(@pxref{Greatest Common Divisor Algorithms}).
+odd, hence the use of @code{mpn_modexact_1_odd} by @code{mpn_gcd_1} and
+@code{mpz_kronecker_ui} etc (@pxref{Greatest Common Divisor Algorithms}).
 
 Montgomery's REDC method for modular multiplications uses operands of the form
 of @m{xb^{-n}, x*b^-n} and @m{yb^{-n}, y*b^-n} and on calculating @m{(xb^{-n})
@@ -8572,11 +8692,7 @@ the squaring.
 The modular multiplies and squares use either a simple division or the REDC
 method by Montgomery (@pxref{References}).  REDC is a little faster,
 essentially saving N single limb divisions in a fashion similar to an exact
-remainder (@pxref{Exact Remainder}).  The current REDC has some limitations.
-It's only @math{O(N^2)} so above @code{POWM_THRESHOLD} division becomes faster
-and is used.  It doesn't attempt to detect small bases, but rather always uses
-a REDC form, which is usually a full size operand.  And lastly it's only
-applied to odd moduli.
+remainder (@pxref{Exact Remainder}).
 
 
 @node Root Extraction Algorithms, Radix Conversion Algorithms, Powering Algorithms, Algorithms
@@ -9476,7 +9592,7 @@ two 32-bit parts.
 likewise @math{p48} and @math{r48}.  @math{p00} and @math{p16} can be summed
 with @math{r64} and @math{r80} from the previous iteration.
 
-For each loop then, four 49-bit quantities are transfered to the integer unit,
+For each loop then, four 49-bit quantities are transferred to the integer unit,
 aligned as follows,
 
 @tex
@@ -10123,7 +10239,7 @@ mpf_class & mpf_class::operator=(const __gmp_expr<T> &expr)
 
 template <class Op>
 void __gmp_expr<__gmp_binary_expr<mpf_class, mpf_class, Op> >::eval
-(mpf_t f, unsigned long int precision)
+(mpf_t f, mp_bitcnt_t precision)
 @{
   Op::eval(f, expr.val1.get_mpf_t(), expr.val2.get_mpf_t());
 @}
@@ -10159,7 +10275,7 @@ And the corresponding specializations of @code{__gmp_expr::eval}:
 template <class T, class U, class Op>
 void __gmp_expr
 <__gmp_binary_expr<__gmp_expr<T>, __gmp_expr<U>, Op> >::eval
-(mpf_t f, unsigned long int precision)
+(mpf_t f, mp_bitcnt_t precision)
 @{
   // declare two temporaries
   mpf_class temp1(expr.val1, precision), temp2(expr.val2, precision);
@@ -10201,8 +10317,9 @@ was a driving force behind many of the optimizations in GMP 3.  Paul also
 wrote the new GMP 4.3 nth root code (with Torbj@"orn).
 
 Ken Weber (Kent State University, Universidade Federal do Rio Grande do Sul)
-contributed @code{mpz_gcd}, @code{mpz_divexact}, @code{mpn_gcd}, and
-@code{mpn_bdivmod}, partially supported by CNPq (Brazil) grant 301314194-2.c
+contributed now defunct versions of @code{mpz_gcd}, @code{mpz_divexact},
+@code{mpn_gcd}, and @code{mpn_bdivmod}, partially supported by CNPq (Brazil)
+grant 301314194-2.
 
 Per Bothner of Cygnus Support helped to set up GMP to use Cygnus' configure.
 He has also made valuable suggestions and tested numerous intermediary
@@ -10251,21 +10368,27 @@ improvements.
 Niels M@"oller wrote the sub-quadratic GCD and extended GCD code, the
 quadratic Hensel division code, and (with Torbj@"orn) the new divide and
 conquer division code for GMP 4.3.  Niels also helped implement the new Toom
-multiply code for GMP 4.3.
+multiply code for GMP 4.3 and implemented helper functions to simplify Toom
+evaluations for GMP 5.0.  He wrote the original version of mpn_mulmod_bnm1.
 
 Alberto Zanoni and Marco Bodrato suggested the unbalanced multiply strategy,
 and found the optimal strategies for evaluation and interpolation in Toom
-multiplication.  Marco also helped implement the new Toom multiply code for
-GMP 4.3.
+multiplication.
 
-David Harvey suggested the internal function @code{mpn_bdiv_dbm1},
-implementing division relevant to Toom multiplication.  He also worked on
-fast assembly sequences, in particular on a fast AMD64
-@code{mpn_mul_basecase}.
+Marco Bodrato helped implement the new Toom multiply code for GMP 4.3 and
+implemented most of the new Toom multiply and squaring code for 5.0.
+He is the main author of the current mpn_mulmod_bnm1 and mpn_mullo_n.  Marco
+also wrote the functions mpn_invert and mpn_invertappr.
+
+David Harvey suggested the internal function @code{mpn_bdiv_dbm1}, implementing
+division relevant to Toom multiplication.  He also worked on fast assembly
+sequences, in particular on a fast AMD64 @code{mpn_mul_basecase}.
+
+Martin Boij wrote @code{mpn_perfect_power_p}.
 
 (This list is chronological, not ordered after significance.  If you have
-contributed to GMP but are not listed above, please tell @email{tege@@gmplib.org}
-about the omission!)
+contributed to GMP but are not listed above, please tell
+@email{gmp-devel@@gmplib.org} about the omission!)
 
 The development of floating point functions of GNU MP 2, were supported in part
 by the ESPRIT-BRA (Basic Research Activities) 6846 project POSSO (POlynomial
@@ -10297,6 +10420,11 @@ Jonathan M. Borwein and Peter B. Borwein, ``Pi and the AGM: A Study in
 Analytic Number Theory and Computational Complexity'', Wiley, 1998.
 
 @item
+Richard Crandall and Carl Pomerance, ``Prime Numbers: A Computational
+Perspective'', 2nd edition, Springer-Verlag, 2005.
+@texlinebreak{} @uref{http://math.dartmouth.edu/~carlp/}
+
+@item
 Henri Cohen, ``A Course in Computational Algebraic Number Theory'', Graduate
 Texts in Mathematics number 138, Springer-Verlag, 1993.
 @texlinebreak{} @uref{http://www.math.u-bordeaux.fr/~cohen/}
@@ -10315,9 +10443,10 @@ Alfred J. Menezes, Paul C. van Oorschot and Scott A. Vanstone, ``Handbook of
 Applied Cryptography'', @uref{http://www.cacr.math.uwaterloo.ca/hac/}
 
 @item
-Richard M. Stallman, ``Using and Porting GCC'', Free Software Foundation, 1999,
-available online @uref{http://gcc.gnu.org/onlinedocs/}, and in
-the GCC package @uref{ftp://ftp.gnu.org/gnu/gcc/}
+Richard M. Stallman and the GCC Developer Community, ``Using the GNU Compiler
+Collection'', Free Software Foundation, 2008, available online
+@uref{http://gcc.gnu.org/onlinedocs/}, and in the GCC package
+@uref{ftp://ftp.gnu.org/gnu/gcc/}
 @end itemize
 
 @section Papers
@@ -10339,6 +10468,14 @@ Torbj@"orn Granlund and Peter L. Montgomery, ``Division by Invariant Integers
 using Multiplication'', in Proceedings of the SIGPLAN PLDI'94 Conference, June
 1994.  Also available @uref{ftp://ftp.cwi.nl/pub/pmontgom/divcnst.psa4.gz}
 (and .psl.gz).
+
+@item
+Niels M@"oller and Torbj@"orn Granlund, ``Improved division by invariant
+integers'', to appear.
+
+@item
+Torbj@"orn Granlund and Niels M@"oller, ``Division of integers large and
+small'', to appear.
 
 @item
 Tudor Jebelean,
@@ -10429,7 +10566,7 @@ volume 43, number 8, August 1994, pp.@: 899-908.
 @cindex GNU Free Documentation License
 @cindex Free Documentation License
 @cindex Documentation license
-@include fdl.texi
+@include fdl-1.3.texi
 
 
 @node Concept Index, Function Index, GNU Free Documentation License, Top

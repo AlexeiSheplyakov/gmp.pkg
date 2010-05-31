@@ -49,7 +49,7 @@ dnl
 dnl  But note that when a quoted string is being read, a # isn't special, so
 dnl  apostrophes in comments in quoted strings must be avoided or they'll be
 dnl  interpreted as a closing quote mark.  But when the quoted text is
-dnl  re-read # will still act like a normal comment, supressing macro
+dnl  re-read # will still act like a normal comment, suppressing macro
 dnl  expansion.
 dnl
 dnl  For example,
@@ -219,7 +219,7 @@ undefine(`m4_dollarhash_1_if_noparen_test')
 
 dnl  Usage: m4wrap_prepend(string)
 dnl
-dnl  Prepend the given string to what will be exapanded under m4wrap at the
+dnl  Prepend the given string to what will be expanded under m4wrap at the
 dnl  end of input.
 dnl
 dnl  This macro exists to work around variations in m4wrap() behaviour in
@@ -1079,6 +1079,12 @@ m4_not_for_expansion(`OPERATION_rshift')
 dnl  aorslsh1_n
 m4_not_for_expansion(`OPERATION_addlsh1_n')
 m4_not_for_expansion(`OPERATION_sublsh1_n')
+m4_not_for_expansion(`OPERATION_rsblsh1_n')
+
+dnl  aorslsh2_n
+m4_not_for_expansion(`OPERATION_addlsh2_n')
+m4_not_for_expansion(`OPERATION_sublsh2_n')
+m4_not_for_expansion(`OPERATION_rsblsh2_n')
 
 dnl  rsh1aors_n
 m4_not_for_expansion(`OPERATION_rsh1add_n')
@@ -1091,7 +1097,7 @@ dnl  Check that `symbol' is defined.  If it isn't, issue an error and
 dnl  terminate immediately.  The error message explains that the symbol
 dnl  should be in config.m4, copied from gmp-mparam.h.
 dnl
-dnl  Termination is immediate since missing say SQR_KARATSUBA_THRESHOLD can
+dnl  Termination is immediate since missing say SQR_TOOM2_THRESHOLD can
 dnl  lead to infinite loops and endless error messages.
 
 define(m4_config_gmp_mparam,
@@ -1303,20 +1309,23 @@ define_mpn(add_1)
 define_mpn(add_n)
 define_mpn(add_nc)
 define_mpn(addlsh1_n)
+define_mpn(addlsh2_n)
+define_mpn(addlsh_n)
 define_mpn(addmul_1)
 define_mpn(addmul_1c)
 define_mpn(addmul_2)
 define_mpn(addmul_3)
 define_mpn(addmul_4)
-define_mpn(addsub_n)
-define_mpn(addsub_nc)
+define_mpn(add_n_sub_n)
+define_mpn(add_n_sub_nc)
 define_mpn(addaddmul_1msb0)
 define_mpn(and_n)
 define_mpn(andn_n)
+define_mpn(bdiv_q_1)
+define_mpn(pi1_bdiv_q_1)
 define_mpn(bdiv_dbm1c)
-define_mpn(bdivmod)
 define_mpn(cmp)
-define_mpn(com_n)
+define_mpn(com)
 define_mpn(copyd)
 define_mpn(copyi)
 define_mpn(count_leading_zeros)
@@ -1338,14 +1347,16 @@ define_mpn(hamdist)
 define_mpn(invert_limb)
 define_mpn(ior_n)
 define_mpn(iorn_n)
-define_mpn(kara_mul_n)
-define_mpn(kara_sqr_n)
 define_mpn(lshift)
 define_mpn(lshiftc)
-define_mpn(mod_1_1)
-define_mpn(mod_1_2)
-define_mpn(mod_1_3)
-define_mpn(mod_1_4)
+define_mpn(mod_1_1p)
+define_mpn(mod_1_1p_cps)
+define_mpn(mod_1s_2p)
+define_mpn(mod_1s_2p_cps)
+define_mpn(mod_1s_3p)
+define_mpn(mod_1s_3p_cps)
+define_mpn(mod_1s_4p)
+define_mpn(mod_1s_4p_cps)
 define_mpn(mod_1)
 define_mpn(mod_1c)
 define_mpn(mod_34lsub1)
@@ -1359,12 +1370,13 @@ define_mpn(mul_3)
 define_mpn(mul_4)
 define_mpn(mul_basecase)
 define_mpn(mul_n)
+define_mpn(mullo_basecase)
 define_mpn(perfect_square_p)
 define_mpn(popcount)
 define_mpn(preinv_divrem_1)
 define_mpn(preinv_mod_1)
 define_mpn(nand_n)
-define_mpn(neg_n)
+define_mpn(neg)
 define_mpn(nior_n)
 define_mpn(powm)
 define_mpn(powlo)
@@ -1372,8 +1384,13 @@ define_mpn(random)
 define_mpn(random2)
 define_mpn(redc_1)
 define_mpn(redc_2)
+define_mpn(rsblsh1_n)
+define_mpn(rsblsh2_n)
+define_mpn(rsblsh_n)
 define_mpn(rsh1add_n)
+define_mpn(rsh1add_nc)
 define_mpn(rsh1sub_n)
+define_mpn(rsh1sub_nc)
 define_mpn(rshift)
 define_mpn(rshiftc)
 define_mpn(scan0)
@@ -1383,6 +1400,7 @@ define_mpn(sqr_basecase)
 define_mpn(sqr_diagonal)
 define_mpn(sub_n)
 define_mpn(sublsh1_n)
+define_mpn(sublsh2_n)
 define_mpn(sqrtrem)
 define_mpn(sub)
 define_mpn(sub_1)
@@ -1390,8 +1408,6 @@ define_mpn(sub_n)
 define_mpn(sub_nc)
 define_mpn(submul_1)
 define_mpn(submul_1c)
-define_mpn(toom3_mul_n)
-define_mpn(toom3_sqr_n)
 define_mpn(umul_ppmm)
 define_mpn(umul_ppmm_r)
 define_mpn(udiv_qrnnd)

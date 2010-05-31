@@ -67,7 +67,7 @@ mpn_pow_1_highpart (mp_ptr rp, mp_size_t *ignp,
   count_leading_zeros (cnt, exp);
   for (i = GMP_LIMB_BITS - cnt - 2; i >= 0; i--)
     {
-      mpn_sqr_n (tp, rp + off, rn);
+      mpn_sqr (tp, rp + off, rn);
       rn = 2 * rn;
       rn -= tp[rn - 1] == 0;
       ign <<= 1;
@@ -174,7 +174,8 @@ mpf_get_str (char *dbuf, mp_exp_t *exp, int base, size_t n_digits, mpf_srcptr u)
      conversion.)  */
   tstr = (unsigned char *) TMP_ALLOC (n_digits + 2 * GMP_LIMB_BITS + 3);
 
-  n_limbs_needed = 2 + ((mp_size_t) (n_digits / mp_bases[base].chars_per_bit_exactly)) / GMP_NUMB_BITS;
+  n_limbs_needed = 2 + (mp_size_t)
+    (n_digits / (GMP_NUMB_BITS * mp_bases[base].chars_per_bit_exactly));
 
   if (ue <= n_limbs_needed)
     {

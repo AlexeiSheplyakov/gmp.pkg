@@ -1,7 +1,7 @@
 /* Header for speed and threshold things.
 
-Copyright 1999, 2000, 2001, 2002, 2003, 2005, 2006 Free Software Foundation,
-Inc.
+Copyright 1999, 2000, 2001, 2002, 2003, 2005, 2006, 2008, 2009, 2010 Free
+Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
@@ -31,9 +31,9 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.  */
   } while (0)
 
 /* A mask of the least significant n bits.  Note 1<<32 doesn't give zero on
-   x86 family CPUs, hence the separate case for BITS_PER_MP_LIMB. */
+   x86 family CPUs, hence the separate case for GMP_LIMB_BITS. */
 #define MP_LIMB_T_LOWBITMASK(n)	\
-  ((n) == BITS_PER_MP_LIMB ? MP_LIMB_T_MAX : ((mp_limb_t) 1 << (n)) - 1)
+  ((n) == GMP_LIMB_BITS ? MP_LIMB_T_MAX : ((mp_limb_t) 1 << (n)) - 1)
 
 
 /* align must be a power of 2 here, usually CACHE_LINE_SIZE is a good choice */
@@ -117,7 +117,7 @@ struct speed_params {
   struct {
     mp_ptr    ptr;
     mp_size_t size;
-  } src[2], dst[3];
+  } src[3], dst[3];
 };
 
 typedef double (*speed_function_t) __GMP_PROTO ((struct speed_params *s));
@@ -146,7 +146,8 @@ double speed_mpf_init_clear __GMP_PROTO ((struct speed_params *s));
 
 double speed_mpn_add_n __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_addlsh1_n __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_addsub_n __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_addlsh2_n __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_add_n_sub_n __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_and_n __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_andn_n __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_addmul_1 __GMP_PROTO ((struct speed_params *s));
@@ -157,19 +158,16 @@ double speed_mpn_addmul_5 __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_addmul_6 __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_addmul_7 __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_addmul_8 __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_com_n __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_com __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_copyd __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_copyi __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_dc_divrem_n __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_dc_divrem_sb __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_dc_divrem_sb_div __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_dc_divrem_sb_inv __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_dc_tdiv_qr __GMP_PROTO ((struct speed_params *s));
 double speed_MPN_COPY __GMP_PROTO ((struct speed_params *s));
 double speed_MPN_COPY_DECR __GMP_PROTO ((struct speed_params *s));
 double speed_MPN_COPY_INCR __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_divexact_1 __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_divexact_by3 __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_bdiv_q_1 __GMP_PROTO ((struct speed_params *));
+double speed_mpn_pi1_bdiv_q_1 __GMP_PROTO ((struct speed_params *));
 double speed_mpn_bdiv_dbm1c __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_divrem_1 __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_divrem_1f __GMP_PROTO ((struct speed_params *s));
@@ -189,8 +187,6 @@ double speed_mpn_hgcd_lehmer __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_gcd __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_gcd_1 __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_gcd_1N __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_gcd_binary __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_gcd_accel __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_gcdext __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_gcdext_double __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_gcdext_one_double __GMP_PROTO ((struct speed_params *s));
@@ -204,13 +200,16 @@ double speed_mpn_jacobi_base __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_jacobi_base_1 __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_jacobi_base_2 __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_jacobi_base_3 __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_kara_mul_n __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_kara_sqr_n __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_lshift __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_lshiftc __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_mod_1 __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_mod_1c __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_mod_1_div __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_mod_1_inv __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_mod_1_1 __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_mod_1_2 __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_mod_1_3 __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_mod_1_4 __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_mod_34lsub1 __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_modexact_1_odd __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_modexact_1c_odd __GMP_PROTO ((struct speed_params *s));
@@ -223,19 +222,47 @@ double speed_mpn_mul __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_mul_basecase __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_mul_fft __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_mul_fft_sqr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_fft_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_fft_sqr __GMP_PROTO ((struct speed_params *s));
+#if WANT_OLD_FFT_FULL
 double speed_mpn_mul_fft_full __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_mul_fft_full_sqr __GMP_PROTO ((struct speed_params *s));
+#endif
+double speed_mpn_nussbaumer_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_nussbaumer_mul_sqr __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_mul_n __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_mul_n_sqr __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_mullow_n __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_mullow_basecase __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_mullo_n __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_mullo_basecase __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_nand_n __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_nior_n __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_popcount __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_preinv_divrem_1 __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_preinv_divrem_1f __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_preinv_mod_1 __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_sbpi1_div_qr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_dcpi1_div_qr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_sbpi1_divappr_q __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_dcpi1_divappr_q __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_mu_div_qr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_mu_divappr_q __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_mupi_div_qr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_mu_div_q __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_sbpi1_bdiv_qr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_dcpi1_bdiv_qr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_sbpi1_bdiv_q __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_dcpi1_bdiv_q __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_mu_bdiv_q __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_mu_bdiv_qr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_invert __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_invertappr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_ni_invertappr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_binvert __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_redc_1 __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_redc_2 __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_redc_n __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_rsblsh1_n __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_rsblsh2_n __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_rsh1add_n __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_rsh1sub_n __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_rshift __GMP_PROTO ((struct speed_params *s));
@@ -248,14 +275,37 @@ double speed_mpn_dc_set_str __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_set_str_pre __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_sqr_basecase __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_sqr_diagonal __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_sqr_n __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_sqr __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_sqrtrem __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_rootrem __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_sub_n __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_sublsh1_n __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_sublsh2_n __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_submul_1 __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_toom3_mul_n __GMP_PROTO ((struct speed_params *s));
-double speed_mpn_toom3_sqr_n __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom2_sqr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom3_sqr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom4_sqr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom6_sqr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom8_sqr __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom22_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom33_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom44_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom6h_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom8h_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom32_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom42_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom43_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom63_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom32_for_toom43_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom43_for_toom32_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom32_for_toom53_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom53_for_toom32_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom42_for_toom53_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_toom53_for_toom42_mul __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_mulmod_bnm1 __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_bc_mulmod_bnm1 __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_mulmod_bnm1_rounded __GMP_PROTO ((struct speed_params *s));
+double speed_mpn_sqrmod_bnm1 __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_udiv_qrnnd __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_udiv_qrnnd_r __GMP_PROTO ((struct speed_params *s));
 double speed_mpn_umul_ppmm __GMP_PROTO ((struct speed_params *s));
@@ -396,11 +446,7 @@ mp_limb_t mpn_sb_divrem_mn_div __GMP_PROTO ((mp_ptr, mp_ptr, mp_size_t, mp_srcpt
 mp_limb_t mpn_sb_divrem_mn_inv __GMP_PROTO ((mp_ptr, mp_ptr, mp_size_t, mp_srcptr, mp_size_t));
 
 mp_size_t mpn_set_str_basecase __GMP_PROTO ((mp_ptr, const unsigned char *, size_t, int));
-
-void mpn_toom3_mul_n_open __GMP_PROTO ((mp_ptr, mp_srcptr, mp_srcptr, mp_size_t, mp_ptr));
-void mpn_toom3_sqr_n_open __GMP_PROTO ((mp_ptr, mp_srcptr, mp_size_t, mp_ptr));
-void mpn_toom3_mul_n_mpn __GMP_PROTO ((mp_ptr, mp_srcptr, mp_srcptr, mp_size_t, mp_ptr));
-void mpn_toom3_sqr_n_mpn __GMP_PROTO((mp_ptr, mp_srcptr, mp_size_t, mp_ptr));
+void mpn_pre_set_str __GMP_PROTO ((mp_ptr, unsigned char *, size_t, powers_t *, mp_ptr));
 
 void mpz_powm_mod __GMP_PROTO ((mpz_ptr, mpz_srcptr, mpz_srcptr, mpz_srcptr));
 void mpz_powm_redc __GMP_PROTO ((mpz_ptr, mpz_srcptr, mpz_srcptr, mpz_srcptr));
@@ -734,6 +780,26 @@ int speed_routine_count_zeros_setup
 #define SPEED_ROUTINE_MPN_DIVEXACT_1(function)				\
   SPEED_ROUTINE_MPN_UNARY_1_CALL ((*function) (wp, s->xp, s->size, s->r))
 
+#define SPEED_ROUTINE_MPN_BDIV_Q_1(function)				\
+    SPEED_ROUTINE_MPN_UNARY_1_CALL ((*function) (wp, s->xp, s->size, s->r))
+
+#define SPEED_ROUTINE_MPN_PI1_BDIV_Q_1_CALL(call)			\
+  {									\
+    unsigned   shift;							\
+    mp_limb_t  dinv;							\
+									\
+    SPEED_RESTRICT_COND (s->size > 0);					\
+    SPEED_RESTRICT_COND (s->r != 0);					\
+									\
+    count_trailing_zeros (shift, s->r);					\
+    binvert_limb (dinv, s->r >> shift);					\
+									\
+    SPEED_ROUTINE_MPN_UNARY_1_CALL (call);				\
+  }
+#define SPEED_ROUTINE_MPN_PI1_BDIV_Q_1(function)			\
+  SPEED_ROUTINE_MPN_PI1_BDIV_Q_1_CALL					\
+  ((*function) (wp, s->xp, s->size, s->r, dinv, shift))
+
 #define SPEED_ROUTINE_MPN_BDIV_DBM1C(function)				\
   SPEED_ROUTINE_MPN_UNARY_1_CALL ((*function) (wp, s->xp, s->size, s->r, 0))
 
@@ -892,7 +958,7 @@ int speed_routine_count_zeros_setup
 #define SPEED_ROUTINE_MPN_MUL_N(function)				\
   SPEED_ROUTINE_MPN_MUL_N_CALL (function (wp, s->xp, s->yp, s->size));
 
-#define SPEED_ROUTINE_MPN_MULLOW_N_CALL(call)				\
+#define SPEED_ROUTINE_MPN_MULLO_N_CALL(call)				\
   {									\
     mp_ptr    wp;							\
     unsigned  i;							\
@@ -920,11 +986,11 @@ int speed_routine_count_zeros_setup
     return t;								\
   }
 
-#define SPEED_ROUTINE_MPN_MULLOW_N(function)				\
-  SPEED_ROUTINE_MPN_MULLOW_N_CALL (function (wp, s->xp, s->yp, s->size));
+#define SPEED_ROUTINE_MPN_MULLO_N(function)				\
+  SPEED_ROUTINE_MPN_MULLO_N_CALL (function (wp, s->xp, s->yp, s->size));
 
 /* For mpn_mul_basecase, xsize=r, ysize=s->size. */
-#define SPEED_ROUTINE_MPN_MULLOW_BASECASE(function)			\
+#define SPEED_ROUTINE_MPN_MULLO_BASECASE(function)			\
   {									\
     mp_ptr    wp;							\
     unsigned  i;							\
@@ -945,6 +1011,72 @@ int speed_routine_count_zeros_setup
     i = s->reps;							\
     do									\
       function (wp, s->xp, s->yp, s->size);				\
+    while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+
+#define SPEED_ROUTINE_MPN_MULMOD_BNM1_CALL(call)			\
+  {									\
+    mp_ptr    wp, tp;							\
+    unsigned  i;							\
+    double    t;							\
+    mp_size_t itch;							\
+    TMP_DECL;								\
+									\
+    SPEED_RESTRICT_COND (s->size >= 1);					\
+									\
+    itch = mpn_mulmod_bnm1_itch (s->size, s->size, s->size);		\
+									\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (wp, 2 * s->size, s->align_wp);		\
+    SPEED_TMP_ALLOC_LIMBS (tp, itch, s->align_wp2);			\
+									\
+    speed_operand_src (s, s->xp, s->size);				\
+    speed_operand_src (s, s->yp, s->size);				\
+    speed_operand_dst (s, wp, 2 * s->size);				\
+    speed_operand_dst (s, tp, itch);					\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do									\
+      call;								\
+    while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+#define SPEED_ROUTINE_MPN_MULMOD_BNM1_ROUNDED(function)			\
+  {									\
+    mp_ptr    wp, tp;							\
+    unsigned  i;							\
+    double    t;							\
+    mp_size_t size, itch;						\
+    TMP_DECL;								\
+									\
+    SPEED_RESTRICT_COND (s->size >= 1);					\
+									\
+    size = mpn_mulmod_bnm1_next_size (s->size);				\
+    itch = mpn_mulmod_bnm1_itch (size, size, size);			\
+									\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (wp, size, s->align_wp);			\
+    SPEED_TMP_ALLOC_LIMBS (tp, itch, s->align_wp2);			\
+									\
+    speed_operand_src (s, s->xp, s->size);				\
+    speed_operand_src (s, s->yp, s->size);				\
+    speed_operand_dst (s, wp, size);					\
+    speed_operand_dst (s, tp, itch);					\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do									\
+      function (wp, size, s->xp, s->size, s->yp, s->size, tp);		\
     while (--i != 0);							\
     t = speed_endtime ();						\
 									\
@@ -982,17 +1114,93 @@ int speed_routine_count_zeros_setup
     return t;								\
   }
 
-#define SPEED_ROUTINE_MPN_KARA_MUL_N(function)				\
+#define SPEED_ROUTINE_MPN_TOOM22_MUL_N(function)			\
   SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
-    (function (wp, s->xp, s->xp, s->size, tspace),			\
-     MPN_KARA_MUL_N_TSIZE (s->size),					\
-     MPN_KARA_MUL_N_MINSIZE)
+    (function (wp, s->xp, s->size, s->yp, s->size, tspace),		\
+     mpn_toom22_mul_itch (s->size, s->size),				\
+     MPN_TOOM22_MUL_MINSIZE)
 
-#define SPEED_ROUTINE_MPN_TOOM3_MUL_N(function)				\
+#define SPEED_ROUTINE_MPN_TOOM33_MUL_N(function)			\
   SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
-    (function (wp, s->xp, s->yp, s->size, tspace),			\
-     MPN_TOOM3_MUL_N_TSIZE (s->size),					\
-     MPN_TOOM3_MUL_N_MINSIZE)
+    (function (wp, s->xp, s->size, s->yp, s->size, tspace),		\
+     mpn_toom33_mul_itch (s->size, s->size),				\
+     MPN_TOOM33_MUL_MINSIZE)
+
+#define SPEED_ROUTINE_MPN_TOOM44_MUL_N(function)			\
+  SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
+    (function (wp, s->xp, s->size, s->yp, s->size, tspace),		\
+     mpn_toom44_mul_itch (s->size, s->size),				\
+     MPN_TOOM44_MUL_MINSIZE)
+
+#define SPEED_ROUTINE_MPN_TOOM6H_MUL_N(function)			\
+  SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
+    (function (wp, s->xp, s->size, s->yp, s->size, tspace),		\
+     mpn_toom6h_mul_itch (s->size, s->size),				\
+     MPN_TOOM6H_MUL_MINSIZE)
+
+#define SPEED_ROUTINE_MPN_TOOM8H_MUL_N(function)			\
+  SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
+    (function (wp, s->xp, s->size, s->yp, s->size, tspace),		\
+     mpn_toom8h_mul_itch (s->size, s->size),				\
+     MPN_TOOM8H_MUL_MINSIZE)
+
+#define SPEED_ROUTINE_MPN_TOOM32_MUL(function)				\
+  SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
+    (function (wp, s->xp, s->size, s->yp, 2*s->size/3, tspace),		\
+     mpn_toom32_mul_itch (s->size, 2*s->size/3),			\
+     MPN_TOOM32_MUL_MINSIZE)
+
+#define SPEED_ROUTINE_MPN_TOOM42_MUL(function)				\
+  SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
+    (function (wp, s->xp, s->size, s->yp, s->size/2, tspace),		\
+     mpn_toom42_mul_itch (s->size, s->size/2),				\
+     MPN_TOOM42_MUL_MINSIZE)
+
+#define SPEED_ROUTINE_MPN_TOOM43_MUL(function)				\
+  SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
+    (function (wp, s->xp, s->size, s->yp, s->size*3/4, tspace),		\
+     mpn_toom43_mul_itch (s->size, s->size*3/4),			\
+     MPN_TOOM43_MUL_MINSIZE)
+
+#define SPEED_ROUTINE_MPN_TOOM63_MUL(function)				\
+  SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
+    (function (wp, s->xp, s->size, s->yp, s->size/2, tspace),		\
+     mpn_toom63_mul_itch (s->size, s->size/2),				\
+     MPN_TOOM63_MUL_MINSIZE)
+
+#define SPEED_ROUTINE_MPN_TOOM32_FOR_TOOM43_MUL(function)		\
+  SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
+    (function (wp, s->xp, s->size, s->yp, 17*s->size/24, tspace),	\
+     mpn_toom32_mul_itch (s->size, 17*s->size/24),			\
+     MPN_TOOM32_MUL_MINSIZE)
+#define SPEED_ROUTINE_MPN_TOOM43_FOR_TOOM32_MUL(function)		\
+  SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
+    (function (wp, s->xp, s->size, s->yp, 17*s->size/24, tspace),	\
+     mpn_toom43_mul_itch (s->size, 17*s->size/24),			\
+     MPN_TOOM43_MUL_MINSIZE)
+
+#define SPEED_ROUTINE_MPN_TOOM32_FOR_TOOM53_MUL(function)		\
+  SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
+    (function (wp, s->xp, s->size, s->yp, 19*s->size/30, tspace),	\
+     mpn_toom32_mul_itch (s->size, 19*s->size/30),			\
+     MPN_TOOM32_MUL_MINSIZE)
+#define SPEED_ROUTINE_MPN_TOOM53_FOR_TOOM32_MUL(function)		\
+  SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
+    (function (wp, s->xp, s->size, s->yp, 19*s->size/30, tspace),	\
+     mpn_toom53_mul_itch (s->size, 19*s->size/30),			\
+     MPN_TOOM53_MUL_MINSIZE)
+
+#define SPEED_ROUTINE_MPN_TOOM42_FOR_TOOM53_MUL(function)		\
+  SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
+    (function (wp, s->xp, s->size, s->yp, 11*s->size/20, tspace),	\
+     mpn_toom42_mul_itch (s->size, 11*s->size/20),			\
+     MPN_TOOM42_MUL_MINSIZE)
+#define SPEED_ROUTINE_MPN_TOOM53_FOR_TOOM42_MUL(function)		\
+  SPEED_ROUTINE_MPN_MUL_N_TSPACE					\
+    (function (wp, s->xp, s->size, s->yp, 11*s->size/20, tspace),	\
+     mpn_toom53_mul_itch (s->size, 11*s->size/20),			\
+     MPN_TOOM53_MUL_MINSIZE)
+
 
 
 #define SPEED_ROUTINE_MPN_SQR_CALL(call)				\
@@ -1058,16 +1266,31 @@ int speed_routine_count_zeros_setup
     return t;								\
   }
 
-#define SPEED_ROUTINE_MPN_KARA_SQR_N(function)				\
+#define SPEED_ROUTINE_MPN_TOOM2_SQR(function)				\
   SPEED_ROUTINE_MPN_SQR_TSPACE (function (wp, s->xp, s->size, tspace),	\
-				MPN_KARA_SQR_N_TSIZE (s->size),		\
-				MPN_KARA_SQR_N_MINSIZE)
+				mpn_toom2_sqr_itch (s->size),		\
+				MPN_TOOM2_SQR_MINSIZE)
 
-#define SPEED_ROUTINE_MPN_TOOM3_SQR_N(function)				\
+#define SPEED_ROUTINE_MPN_TOOM3_SQR(function)				\
   SPEED_ROUTINE_MPN_SQR_TSPACE (function (wp, s->xp, s->size, tspace),	\
-				MPN_TOOM3_SQR_N_TSIZE (s->size),	\
-				MPN_TOOM3_SQR_N_MINSIZE)
+				mpn_toom3_sqr_itch (s->size),		\
+				MPN_TOOM3_SQR_MINSIZE)
 
+
+#define SPEED_ROUTINE_MPN_TOOM4_SQR(function)				\
+  SPEED_ROUTINE_MPN_SQR_TSPACE (function (wp, s->xp, s->size, tspace),	\
+				mpn_toom4_sqr_itch (s->size),		\
+				MPN_TOOM4_SQR_MINSIZE)
+
+#define SPEED_ROUTINE_MPN_TOOM6_SQR(function)				\
+  SPEED_ROUTINE_MPN_SQR_TSPACE (function (wp, s->xp, s->size, tspace),	\
+				mpn_toom6_sqr_itch (s->size),		\
+				MPN_TOOM6_SQR_MINSIZE)
+
+#define SPEED_ROUTINE_MPN_TOOM8_SQR(function)				\
+  SPEED_ROUTINE_MPN_SQR_TSPACE (function (wp, s->xp, s->size, tspace),	\
+				mpn_toom8_sqr_itch (s->size),		\
+				MPN_TOOM8_SQR_MINSIZE)
 
 #define SPEED_ROUTINE_MPN_MOD_CALL(call)				\
   {									\
@@ -1123,6 +1346,47 @@ int speed_routine_count_zeros_setup
     return speed_endtime ();						\
   }
 
+#define SPEED_ROUTINE_MPN_MOD_1_1(function,pfunc)			\
+  {									\
+    unsigned   i;							\
+    mp_limb_t  inv[4];							\
+									\
+    SPEED_RESTRICT_COND (s->size >= 2);					\
+									\
+    mpn_mod_1_1p_cps (inv, s->r);					\
+    speed_operand_src (s, s->xp, s->size);				\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do {								\
+      pfunc (inv, s->r);						\
+      function (s->xp, s->size, s->r, inv);				\
+    } while (--i != 0);							\
+									\
+    return speed_endtime ();						\
+  }
+#define SPEED_ROUTINE_MPN_MOD_1_N(function,pfunc,N)			\
+  {									\
+    unsigned   i;							\
+    mp_limb_t  inv[N+3];						\
+									\
+    SPEED_RESTRICT_COND (s->size >= 1);					\
+    SPEED_RESTRICT_COND (s->r <= ~(mp_limb_t)0 / N);			\
+									\
+    speed_operand_src (s, s->xp, s->size);				\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do {								\
+      pfunc (inv, s->r);						\
+      function (s->xp, s->size, s->r, inv);				\
+    } while (--i != 0);							\
+									\
+    return speed_endtime ();						\
+  }
+
 
 /* A division of 2*s->size by s->size limbs */
 
@@ -1131,6 +1395,7 @@ int speed_routine_count_zeros_setup
     unsigned  i;							\
     mp_ptr    a, d, q, r;						\
     double    t;							\
+    gmp_pi1_t dinv;							\
     TMP_DECL;								\
 									\
     SPEED_RESTRICT_COND (s->size >= 1);					\
@@ -1150,6 +1415,8 @@ int speed_routine_count_zeros_setup
     d[s->size-1] |= GMP_NUMB_HIGHBIT;					\
     a[2*s->size-1] = d[s->size-1] - 1;					\
 									\
+    invert_pi1 (dinv, d[s->size-1], d[s->size-2]);			\
+									\
     speed_operand_src (s, a, 2*s->size);				\
     speed_operand_src (s, d, s->size);					\
     speed_operand_dst (s, q, s->size+1);				\
@@ -1167,58 +1434,6 @@ int speed_routine_count_zeros_setup
     return t;								\
   }
 
-#define SPEED_ROUTINE_MPN_DC_DIVREM_N(function)				\
-  SPEED_ROUTINE_MPN_DC_DIVREM_CALL((*function) (q, a, d, s->size))
-
-#define SPEED_ROUTINE_MPN_DC_DIVREM_SB(function)			\
-  SPEED_ROUTINE_MPN_DC_DIVREM_CALL					\
-    ((*function) (q, a, 2*s->size, d, s->size))
-
-#define SPEED_ROUTINE_MPN_DC_TDIV_QR(function)				\
-  SPEED_ROUTINE_MPN_DC_DIVREM_CALL					\
-    ((*function) (q, r, 0, a, 2*s->size, d, s->size))
-
-
-/* A division of s->size by 3 limbs */
-
-#define SPEED_ROUTINE_MPN_SB_DIVREM_M3(function)			\
-  {									\
-    unsigned   i;							\
-    mp_ptr     a, d, q;							\
-    mp_size_t  qsize;							\
-    double     t;							\
-    TMP_DECL;								\
-									\
-    SPEED_RESTRICT_COND (s->size >= 3);					\
-									\
-    TMP_MARK;								\
-    SPEED_TMP_ALLOC_LIMBS (a, s->size, s->align_xp);			\
-									\
-    SPEED_TMP_ALLOC_LIMBS (d, 3, s->align_yp);				\
-    MPN_COPY (d, s->yp, 3);						\
-    d[2] |= GMP_NUMB_HIGHBIT;						\
-									\
-    qsize = s->size - 3;						\
-    SPEED_TMP_ALLOC_LIMBS (q, qsize, s->align_wp);			\
-									\
-    speed_operand_dst (s, a, s->size);					\
-    speed_operand_src (s, d, 3);					\
-    speed_operand_dst (s, q, qsize);					\
-    speed_cache_fill (s);						\
-									\
-    speed_starttime ();							\
-    i = s->reps;							\
-    do									\
-      {									\
-	MPN_COPY (a, s->xp, s->size);					\
-	function (q, a, s->size, d, 3);					\
-      }									\
-    while (--i != 0);							\
-    t = speed_endtime ();						\
-									\
-    TMP_FREE;								\
-    return t;								\
-  }
 
 /* A remainder 2*s->size by s->size limbs */
 
@@ -1234,7 +1449,7 @@ int speed_routine_count_zeros_setup
     /* high part less than d, low part a duplicate copied in */		\
     mpz_init_set_n (a, s->xp, s->size);					\
     mpz_mod (a, a, d);							\
-    mpz_mul_2exp (a, a, BITS_PER_MP_LIMB * s->size);			\
+    mpz_mul_2exp (a, a, GMP_LIMB_BITS * s->size);			\
     MPN_COPY (PTR(a), s->xp, s->size);					\
 									\
     mpz_init (r);							\
@@ -1251,12 +1466,500 @@ int speed_routine_count_zeros_setup
     return speed_endtime ();						\
   }
 
+#define SPEED_ROUTINE_MPN_PI1_DIV(function, INV, DMIN, QMIN)		\
+  {									\
+    unsigned   i;							\
+    mp_ptr     dp, tp, ap, qp;						\
+    gmp_pi1_t  inv;							\
+    double     t;							\
+    mp_size_t size1;							\
+    TMP_DECL;								\
+									\
+    size1 = (s->r == 0 ? 2 * s->size : s->r);				\
+									\
+    SPEED_RESTRICT_COND (s->size >= DMIN);				\
+    SPEED_RESTRICT_COND (size1 - s->size >= QMIN);			\
+									\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (ap, size1, s->align_xp);			\
+    SPEED_TMP_ALLOC_LIMBS (dp, s->size, s->align_yp);			\
+    SPEED_TMP_ALLOC_LIMBS (qp, size1 - s->size, s->align_wp);		\
+    SPEED_TMP_ALLOC_LIMBS (tp, size1, s->align_wp2);			\
+									\
+    /* we don't fill in dividend completely when size1 > s->size */	\
+    MPN_COPY (ap,         s->xp, s->size);				\
+    MPN_COPY (ap + size1 - s->size, s->xp, s->size);			\
+									\
+    MPN_COPY (dp,         s->yp, s->size);				\
+									\
+    /* normalize the data */						\
+    dp[s->size-1] |= GMP_NUMB_HIGHBIT;					\
+    ap[size1 - 1] = dp[s->size - 1] - 1;				\
+									\
+    invert_pi1 (inv, dp[s->size-1], dp[s->size-2]);			\
+									\
+    speed_operand_src (s, ap, size1);					\
+    speed_operand_dst (s, tp, size1);					\
+    speed_operand_src (s, dp, s->size);					\
+    speed_operand_dst (s, qp, size1 - s->size);				\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do {								\
+      MPN_COPY (tp, ap, size1);						\
+      function (qp, tp, size1, dp, s->size, INV);			\
+    } while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+#define SPEED_ROUTINE_MPN_MU_DIV_Q(function,itchfn)			\
+  {									\
+    unsigned   i;							\
+    mp_ptr     dp, tp, qp, scratch;					\
+    double     t;							\
+    mp_size_t itch;							\
+    TMP_DECL;								\
+									\
+    SPEED_RESTRICT_COND (s->size >= 2);					\
+									\
+    itch = itchfn (2 * s->size, s->size, 0);				\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (dp, s->size, s->align_yp);			\
+    SPEED_TMP_ALLOC_LIMBS (qp, s->size, s->align_wp);			\
+    SPEED_TMP_ALLOC_LIMBS (tp, 2 * s->size, s->align_xp);		\
+    SPEED_TMP_ALLOC_LIMBS (scratch, itch, s->align_wp2);		\
+									\
+    MPN_COPY (tp,         s->xp, s->size);				\
+    MPN_COPY (tp+s->size, s->xp, s->size);				\
+									\
+    /* normalize the data */						\
+    dp[s->size-1] |= GMP_NUMB_HIGHBIT;					\
+    tp[2*s->size-1] = dp[s->size-1] - 1;				\
+									\
+    speed_operand_dst (s, qp, s->size);					\
+    speed_operand_src (s, tp, 2 * s->size);				\
+    speed_operand_src (s, dp, s->size);					\
+    speed_operand_dst (s, scratch, itch);				\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do {								\
+      function (qp, tp, 2 * s->size, dp, s->size, scratch);		\
+    } while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+#define SPEED_ROUTINE_MPN_MU_DIV_QR(function,itchfn)			\
+  {									\
+    unsigned   i;							\
+    mp_ptr     dp, tp, qp, rp, scratch;					\
+    double     t;							\
+    mp_size_t size1, itch;						\
+    TMP_DECL;								\
+									\
+    size1 = (s->r == 0 ? 2 * s->size : s->r);				\
+									\
+    SPEED_RESTRICT_COND (s->size >= 2);					\
+    SPEED_RESTRICT_COND (size1 >= s->size);				\
+									\
+    itch = itchfn (size1, s->size, 0);					\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (dp, s->size, s->align_yp);			\
+    SPEED_TMP_ALLOC_LIMBS (qp, size1 - s->size, s->align_wp);		\
+    SPEED_TMP_ALLOC_LIMBS (tp, size1, s->align_xp);			\
+    SPEED_TMP_ALLOC_LIMBS (scratch, itch, s->align_wp2);		\
+    SPEED_TMP_ALLOC_LIMBS (rp, s->size, s->align_wp2); /* alignment? */	\
+									\
+    /* we don't fill in dividend completely when size1 > s->size */	\
+    MPN_COPY (tp,         s->xp, s->size);				\
+    MPN_COPY (tp + size1 - s->size, s->xp, s->size);			\
+									\
+    MPN_COPY (dp,         s->yp, s->size);				\
+									\
+    /* normalize the data */						\
+    dp[s->size-1] |= GMP_NUMB_HIGHBIT;					\
+    tp[size1 - 1] = dp[s->size - 1] - 1;				\
+									\
+    speed_operand_dst (s, qp, size1 - s->size);				\
+    speed_operand_dst (s, rp, s->size);					\
+    speed_operand_src (s, tp, size1);					\
+    speed_operand_src (s, dp, s->size);					\
+    speed_operand_dst (s, scratch, itch);				\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do {								\
+      function (qp, rp, tp, size1, dp, s->size, scratch);		\
+    } while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+#define SPEED_ROUTINE_MPN_MUPI_DIV_QR(function,itchfn)			\
+  {									\
+    unsigned   i;							\
+    mp_ptr     dp, tp, qp, rp, ip, scratch;				\
+    double     t;							\
+    mp_size_t size1, itch;						\
+    TMP_DECL;								\
+									\
+    size1 = (s->r == 0 ? 2 * s->size : s->r);				\
+									\
+    SPEED_RESTRICT_COND (s->size >= 2);					\
+    SPEED_RESTRICT_COND (size1 >= s->size);				\
+									\
+    itch = itchfn (size1, s->size, 0);					\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (dp, s->size, s->align_yp);			\
+    SPEED_TMP_ALLOC_LIMBS (qp, size1 - s->size, s->align_wp);		\
+    SPEED_TMP_ALLOC_LIMBS (tp, size1, s->align_xp);			\
+    SPEED_TMP_ALLOC_LIMBS (scratch, itch, s->align_wp2);		\
+    SPEED_TMP_ALLOC_LIMBS (rp, s->size, s->align_wp2); /* alignment? */	\
+    SPEED_TMP_ALLOC_LIMBS (ip, s->size, s->align_wp2); /* alignment? */	\
+									\
+    /* we don't fill in dividend completely when size1 > s->size */	\
+    MPN_COPY (tp,         s->xp, s->size);				\
+    MPN_COPY (tp + size1 - s->size, s->xp, s->size);			\
+									\
+    MPN_COPY (dp,         s->yp, s->size);				\
+									\
+    /* normalize the data */						\
+    dp[s->size-1] |= GMP_NUMB_HIGHBIT;					\
+    tp[size1 - 1] = dp[s->size-1] - 1;					\
+									\
+    mpn_invert (ip, dp, s->size, NULL);					\
+									\
+    speed_operand_dst (s, qp, size1 - s->size);				\
+    speed_operand_dst (s, rp, s->size);					\
+    speed_operand_src (s, tp, size1);					\
+    speed_operand_src (s, dp, s->size);					\
+    speed_operand_src (s, ip, s->size);					\
+    speed_operand_dst (s, scratch, itch);				\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do {								\
+      function (qp, rp, tp, size1, dp, s->size, ip, s->size, scratch);	\
+    } while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+
+#define SPEED_ROUTINE_MPN_PI1_BDIV_QR(function)				\
+  {									\
+    unsigned   i;							\
+    mp_ptr     dp, tp, ap, qp;						\
+    mp_limb_t  inv;							\
+    double     t;							\
+    TMP_DECL;								\
+									\
+    SPEED_RESTRICT_COND (s->size >= 1);					\
+									\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (ap, 2*s->size, s->align_xp);			\
+    SPEED_TMP_ALLOC_LIMBS (dp, s->size, s->align_yp);			\
+    SPEED_TMP_ALLOC_LIMBS (qp, s->size, s->align_wp);			\
+    SPEED_TMP_ALLOC_LIMBS (tp, 2*s->size, s->align_wp2);		\
+									\
+    MPN_COPY (ap,         s->xp, s->size);				\
+    MPN_COPY (ap+s->size, s->xp, s->size);				\
+									\
+    /* divisor must be odd */						\
+    MPN_COPY (dp, s->yp, s->size);					\
+    dp[0] |= 1;								\
+    binvert_limb (inv, dp[0]);						\
+    inv = -inv;								\
+									\
+    speed_operand_src (s, ap, 2*s->size);				\
+    speed_operand_dst (s, tp, 2*s->size);				\
+    speed_operand_src (s, dp, s->size);					\
+    speed_operand_dst (s, qp, s->size);					\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do {								\
+      MPN_COPY (tp, ap, 2*s->size);					\
+      function (qp, tp, 2*s->size, dp, s->size, inv);			\
+    } while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+#define SPEED_ROUTINE_MPN_PI1_BDIV_Q(function)				\
+  {									\
+    unsigned   i;							\
+    mp_ptr     dp, tp, qp;						\
+    mp_limb_t  inv;							\
+    double     t;							\
+    TMP_DECL;								\
+									\
+    SPEED_RESTRICT_COND (s->size >= 1);					\
+									\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (dp, s->size, s->align_yp);			\
+    SPEED_TMP_ALLOC_LIMBS (qp, s->size, s->align_wp);			\
+    SPEED_TMP_ALLOC_LIMBS (tp, s->size, s->align_wp2);			\
+									\
+    /* divisor must be odd */						\
+    MPN_COPY (dp, s->yp, s->size);					\
+    dp[0] |= 1;								\
+    binvert_limb (inv, dp[0]);						\
+    inv = -inv;								\
+									\
+    speed_operand_src (s, s->xp, s->size);				\
+    speed_operand_dst (s, tp, s->size);					\
+    speed_operand_src (s, dp, s->size);					\
+    speed_operand_dst (s, qp, s->size);					\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do {								\
+      MPN_COPY (tp, s->xp, s->size);					\
+      function (qp, tp, s->size, dp, s->size, inv);			\
+    } while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+#define SPEED_ROUTINE_MPN_MU_BDIV_Q(function,itchfn)			\
+  {									\
+    unsigned   i;							\
+    mp_ptr     dp, qp, scratch;						\
+    double     t;							\
+    mp_size_t itch;							\
+    TMP_DECL;								\
+									\
+    SPEED_RESTRICT_COND (s->size >= 2);					\
+									\
+    itch = itchfn (s->size, s->size);					\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (dp, s->size, s->align_yp);			\
+    SPEED_TMP_ALLOC_LIMBS (qp, s->size, s->align_wp);			\
+    SPEED_TMP_ALLOC_LIMBS (scratch, itch, s->align_wp2);		\
+									\
+    /* divisor must be odd */						\
+    MPN_COPY (dp, s->yp, s->size);					\
+    dp[0] |= 1;								\
+									\
+    speed_operand_dst (s, qp, s->size);					\
+    speed_operand_src (s, s->xp, s->size);				\
+    speed_operand_src (s, dp, s->size);					\
+    speed_operand_dst (s, scratch, itch);				\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do {								\
+      function (qp, s->xp, s->size, dp, s->size, scratch);		\
+    } while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+#define SPEED_ROUTINE_MPN_MU_BDIV_QR(function,itchfn)			\
+  {									\
+    unsigned   i;							\
+    mp_ptr     dp, tp, qp, rp, scratch;					\
+    double     t;							\
+    mp_size_t itch;							\
+    TMP_DECL;								\
+									\
+    SPEED_RESTRICT_COND (s->size >= 2);					\
+									\
+    itch = itchfn (2 * s->size, s->size);				\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (dp, s->size, s->align_yp);			\
+    SPEED_TMP_ALLOC_LIMBS (qp, s->size, s->align_wp);			\
+    SPEED_TMP_ALLOC_LIMBS (tp, 2 * s->size, s->align_xp);		\
+    SPEED_TMP_ALLOC_LIMBS (scratch, itch, s->align_wp2);		\
+    SPEED_TMP_ALLOC_LIMBS (rp, s->size, s->align_wp2); /* alignment? */	\
+									\
+    MPN_COPY (tp,         s->xp, s->size);				\
+    MPN_COPY (tp+s->size, s->xp, s->size);				\
+									\
+    /* divisor must be odd */						\
+    MPN_COPY (dp, s->yp, s->size);					\
+    dp[0] |= 1;								\
+									\
+    speed_operand_dst (s, qp, s->size);					\
+    speed_operand_dst (s, rp, s->size);					\
+    speed_operand_src (s, tp, 2 * s->size);				\
+    speed_operand_src (s, dp, s->size);					\
+    speed_operand_dst (s, scratch, itch);				\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do {								\
+      function (qp, rp, tp, 2 * s->size, dp, s->size, scratch);		\
+    } while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+
+#define SPEED_ROUTINE_MPN_INVERT(function,itchfn)			\
+  {									\
+    long  i;								\
+    mp_ptr    up, tp, ip;						\
+    double    t;							\
+    TMP_DECL;								\
+									\
+    SPEED_RESTRICT_COND (s->size >= 1);					\
+									\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (ip, s->size, s->align_xp);			\
+    SPEED_TMP_ALLOC_LIMBS (up, s->size,   s->align_yp);			\
+    SPEED_TMP_ALLOC_LIMBS (tp, itchfn (s->size), s->align_wp);		\
+									\
+    MPN_COPY (up, s->xp, s->size);					\
+									\
+    /* normalize the data */						\
+    up[s->size-1] |= GMP_NUMB_HIGHBIT;					\
+									\
+    speed_operand_src (s, up, s->size);					\
+    speed_operand_dst (s, tp, s->size);					\
+    speed_operand_dst (s, ip, s->size);					\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do									\
+      function (ip, up, s->size, tp);					\
+    while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+
+#define SPEED_ROUTINE_MPN_INVERTAPPR(function,itchfn)			\
+  {									\
+    long  i;								\
+    mp_ptr    up, tp, ip;						\
+    double    t;							\
+    TMP_DECL;								\
+									\
+    SPEED_RESTRICT_COND (s->size >= 1);					\
+									\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (ip, s->size, s->align_xp);			\
+    SPEED_TMP_ALLOC_LIMBS (up, s->size, s->align_yp);			\
+    SPEED_TMP_ALLOC_LIMBS (tp, itchfn (s->size), s->align_wp);		\
+									\
+    MPN_COPY (up, s->xp, s->size);					\
+									\
+    /* normalize the data */						\
+    up[s->size-1] |= GMP_NUMB_HIGHBIT;					\
+									\
+    speed_operand_src (s, up, s->size);					\
+    speed_operand_dst (s, tp, s->size);					\
+    speed_operand_dst (s, ip, s->size);					\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do									\
+      function (ip, up, s->size, tp);					\
+    while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+
+#define SPEED_ROUTINE_MPN_NI_INVERTAPPR(function,itchfn)		\
+  {									\
+    long  i;								\
+    mp_ptr    up, tp, ip;						\
+    double    t;							\
+    TMP_DECL;								\
+									\
+    SPEED_RESTRICT_COND (s->size >= 3);					\
+									\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (ip, s->size, s->align_xp);			\
+    SPEED_TMP_ALLOC_LIMBS (up, s->size, s->align_yp);			\
+    SPEED_TMP_ALLOC_LIMBS (tp, itchfn (s->size), s->align_wp);		\
+									\
+    MPN_COPY (up, s->xp, s->size);					\
+									\
+    /* normalize the data */						\
+    up[s->size-1] |= GMP_NUMB_HIGHBIT;					\
+									\
+    speed_operand_src (s, up, s->size);					\
+    speed_operand_dst (s, tp, s->size);					\
+    speed_operand_dst (s, ip, s->size);					\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do									\
+      function (ip, up, s->size, tp);					\
+    while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+
+#define SPEED_ROUTINE_MPN_BINVERT(function,itchfn)			\
+  {									\
+    long  i;								\
+    mp_ptr    up, tp, ip;						\
+    double    t;							\
+    TMP_DECL;								\
+									\
+    SPEED_RESTRICT_COND (s->size >= 1);					\
+									\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (ip, s->size, s->align_xp);			\
+    SPEED_TMP_ALLOC_LIMBS (up, s->size,   s->align_yp);			\
+    SPEED_TMP_ALLOC_LIMBS (tp, itchfn (s->size), s->align_wp);		\
+									\
+    MPN_COPY (up, s->xp, s->size);					\
+									\
+    /* normalize the data */						\
+    up[0] |= 1;								\
+									\
+    speed_operand_src (s, up, s->size);					\
+    speed_operand_dst (s, tp, s->size);					\
+    speed_operand_dst (s, ip, s->size);					\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do									\
+      function (ip, up, s->size, tp);					\
+    while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
 
 #define SPEED_ROUTINE_REDC_1(function)					\
   {									\
     unsigned   i;							\
     mp_ptr     cp, mp, tp, ap;						\
-    mp_limb_t  Nprim;							\
+    mp_limb_t  inv;							\
     double     t;							\
     TMP_DECL;								\
 									\
@@ -1274,7 +1977,8 @@ int speed_routine_count_zeros_setup
     /* modulus must be odd */						\
     MPN_COPY (mp, s->yp, s->size);					\
     mp[0] |= 1;								\
-    binvert_limb (Nprim, mp[0]);					\
+    binvert_limb (inv, mp[0]);						\
+    inv = -inv;								\
 									\
     speed_operand_src (s, ap, 2*s->size+1);				\
     speed_operand_dst (s, tp, 2*s->size+1);				\
@@ -1286,7 +1990,90 @@ int speed_routine_count_zeros_setup
     i = s->reps;							\
     do {								\
       MPN_COPY (tp, ap, 2*s->size);					\
-      function (cp, tp, mp, s->size, Nprim);				\
+      function (cp, tp, mp, s->size, inv);				\
+    } while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+#define SPEED_ROUTINE_REDC_2(function)					\
+  {									\
+    unsigned   i;							\
+    mp_ptr     cp, mp, tp, ap;						\
+    mp_limb_t  invp[2];							\
+    double     t;							\
+    TMP_DECL;								\
+									\
+    SPEED_RESTRICT_COND (s->size >= 1);					\
+									\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (ap, 2*s->size+1, s->align_xp);		\
+    SPEED_TMP_ALLOC_LIMBS (mp, s->size,     s->align_yp);		\
+    SPEED_TMP_ALLOC_LIMBS (cp, s->size,     s->align_wp);		\
+    SPEED_TMP_ALLOC_LIMBS (tp, 2*s->size+1, s->align_wp2);		\
+									\
+    MPN_COPY (ap,         s->xp, s->size);				\
+    MPN_COPY (ap+s->size, s->xp, s->size);				\
+									\
+    /* modulus must be odd */						\
+    MPN_COPY (mp, s->yp, s->size);					\
+    mp[0] |= 1;								\
+    mpn_binvert (invp, mp, 2, tp);					\
+    invp[0] = -invp[0]; invp[1] = ~invp[1];				\
+									\
+    speed_operand_src (s, ap, 2*s->size+1);				\
+    speed_operand_dst (s, tp, 2*s->size+1);				\
+    speed_operand_src (s, mp, s->size);					\
+    speed_operand_dst (s, cp, s->size);					\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do {								\
+      MPN_COPY (tp, ap, 2*s->size);					\
+      function (cp, tp, mp, s->size, invp);				\
+    } while (--i != 0);							\
+    t = speed_endtime ();						\
+									\
+    TMP_FREE;								\
+    return t;								\
+  }
+#define SPEED_ROUTINE_REDC_N(function)					\
+  {									\
+    unsigned   i;							\
+    mp_ptr     cp, mp, tp, ap, invp;					\
+    double     t;							\
+    TMP_DECL;								\
+									\
+    SPEED_RESTRICT_COND (s->size > 8);					\
+									\
+    TMP_MARK;								\
+    SPEED_TMP_ALLOC_LIMBS (ap, 2*s->size+1, s->align_xp);		\
+    SPEED_TMP_ALLOC_LIMBS (mp, s->size,     s->align_yp);		\
+    SPEED_TMP_ALLOC_LIMBS (cp, s->size,     s->align_wp);		\
+    SPEED_TMP_ALLOC_LIMBS (tp, 2*s->size+1, s->align_wp2);		\
+    SPEED_TMP_ALLOC_LIMBS (invp, s->size,   s->align_wp2); /* align? */	\
+									\
+    MPN_COPY (ap,         s->xp, s->size);				\
+    MPN_COPY (ap+s->size, s->xp, s->size);				\
+									\
+    /* modulus must be odd */						\
+    MPN_COPY (mp, s->yp, s->size);					\
+    mp[0] |= 1;								\
+    mpn_binvert (invp, mp, s->size, tp);				\
+									\
+    speed_operand_src (s, ap, 2*s->size+1);				\
+    speed_operand_dst (s, tp, 2*s->size+1);				\
+    speed_operand_src (s, mp, s->size);					\
+    speed_operand_dst (s, cp, s->size);					\
+    speed_cache_fill (s);						\
+									\
+    speed_starttime ();							\
+    i = s->reps;							\
+    do {								\
+      MPN_COPY (tp, ap, 2*s->size);					\
+      function (cp, tp, mp, s->size, invp);				\
     } while (--i != 0);							\
     t = speed_endtime ();						\
 									\
@@ -2065,8 +2852,8 @@ int speed_routine_count_zeros_setup
     for (i = 0; i < s->size; i++)					\
       xp[i] = s->xp[i] % base;						\
 									\
-    wn = ((mp_size_t) (s->size / __mp_bases[base].chars_per_bit_exactly)) \
-      / BITS_PER_MP_LIMB + 2;						\
+    wn = ((mp_size_t) (s->size / mp_bases[base].chars_per_bit_exactly)) \
+      / GMP_LIMB_BITS + 2;						\
     SPEED_TMP_ALLOC_LIMBS (wp, wn, s->align_wp);			\
 									\
     /* use this during development to check wn is big enough */		\

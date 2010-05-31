@@ -49,7 +49,7 @@ C   r20,r29,r13-r15  scramble
 C
 C   We're doing 7 of the 8 carry propagations with a br fixup code and 1 with a
 C   put-the-carry-into-hi.  The idea is that these branches are very rarely
-C   taken, and since a non-taken branch consumes no resurces, that is better
+C   taken, and since a non-taken branch consumes no resources, that is better
 C   than an addq.
 C
 C   Software pipeline: a load in cycle #09, feeds a mul in cycle #16, feeds an
@@ -126,7 +126,7 @@ $L_9_or_more:
 	mulq	r2,r19,r3	C r3 = prod_low
 	umulh	r2,r19,r21	C r21 = prod_high
 	beq	r20,$Le1b	C jump if size was == 1
-	bis	r31, r31, r0	C FIXME: shouldtn't need this
+	bis	r31, r31, r0	C FIXME: shouldn't need this
 	ldq	r2,0(r17)	C r2 = s1_limb
 	lda	r17,8(r17)	C s1_ptr++
 	lda	r20,-1(r20)	C size--

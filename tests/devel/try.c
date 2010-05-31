@@ -3,7 +3,7 @@
    THIS IS A TEST PROGRAM USED ONLY FOR DEVELOPMENT.  IT'S ALMOST CERTAIN TO
    BE SUBJECT TO INCOMPATIBLE CHANGES IN FUTURE VERSIONS OF GMP.
 
-Copyright 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2008 Free Software
+Copyright 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2008, 2009 Free Software
 Foundation, Inc.
 
 This file is part of the GNU MP Library.
@@ -96,7 +96,7 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.  */
    stuff common to all functions, but the exceptions get messy.
 
    When there's no overlap, run with both src>dst and src<dst.  A subtle
-   calling-conventions violation occured in a P6 copy which depended on the
+   calling-conventions violation occurred in a P6 copy which depended on the
    relative location of src and dst.
 
    multiplier_N is more or less a third source region for the addmul_N
@@ -220,7 +220,7 @@ mp_size_t  pagesize;
 
 #define MAX3(x,y,z)   (MAX (x, MAX (y, z)))
 
-#if BITS_PER_MP_LIMB == 32
+#if GMP_LIMB_BITS == 32
 #define DEADVAL  CNST_LIMB(0xDEADBEEF)
 #else
 #define DEADVAL  CNST_LIMB(0xDEADBEEFBADDCAFE)
@@ -351,10 +351,12 @@ struct try_t {
 
 #define DATA_NON_ZERO         1
 #define DATA_GCD              2
-#define DATA_SRC1_ODD         3
-#define DATA_SRC1_HIGHBIT     4
-#define DATA_MULTIPLE_DIVISOR 5
-#define DATA_UDIV_QRNND       6
+#define DATA_SRC0_ODD         3
+#define DATA_SRC0_HIGHBIT     4
+#define DATA_SRC1_ODD         5
+#define DATA_SRC1_HIGHBIT     6
+#define DATA_MULTIPLE_DIVISOR 7
+#define DATA_UDIV_QRNND       8
   char  data;
 
 /* Default is allow full overlap. */
@@ -583,14 +585,21 @@ validate_sqrtrem (void)
 
 #define TYPE_RSHIFT           23
 #define TYPE_LSHIFT           24
+#define TYPE_LSHIFTC          25
 
-#define TYPE_COPY             25
-#define TYPE_COPYI            26
-#define TYPE_COPYD            27
-#define TYPE_COM_N            28
+#define TYPE_COPY             26
+#define TYPE_COPYI            27
+#define TYPE_COPYD            28
+#define TYPE_COM              29
 
 #define TYPE_ADDLSH1_N        30
+#define TYPE_ADDLSH2_N        48
+#define TYPE_ADDLSH_N         49
 #define TYPE_SUBLSH1_N        31
+#define TYPE_SUBLSH_N        130
+#define TYPE_RSBLSH1_N        34
+#define TYPE_RSBLSH2_N        46
+#define TYPE_RSBLSH_N         47
 #define TYPE_RSH1ADD_N        32
 #define TYPE_RSH1SUB_N        33
 
@@ -611,6 +620,9 @@ validate_sqrtrem (void)
 #define TYPE_DIVEXACT_BY3C    52
 #define TYPE_MODEXACT_1_ODD   53
 #define TYPE_MODEXACT_1C_ODD  54
+
+#define TYPE_INVERT           55
+#define TYPE_BINVERT          56
 
 #define TYPE_GCD              60
 #define TYPE_GCD_1            61
@@ -636,8 +648,9 @@ validate_sqrtrem (void)
 #define TYPE_SQR              82
 #define TYPE_UMUL_PPMM        83
 #define TYPE_UMUL_PPMM_R      84
+#define TYPE_MULLO_N          85
 
-#define TYPE_SB_DIVREM_MN     90
+#define TYPE_SBPI1_DIV_QR     90
 #define TYPE_TDIV_QR          91
 
 #define TYPE_SQRTREM          100
@@ -846,12 +859,12 @@ param_init (void)
   p->dst[1] = 1;
   p->src[0] = 1;
   p->src[1] = 1;
-  REFERENCE (refmpn_addsub_n);
+  REFERENCE (refmpn_add_n_sub_n);
 
   p = &param[TYPE_ADDSUB_NC];
   COPY (TYPE_ADDSUB_N);
   p->carry = CARRY_4;
-  REFERENCE (refmpn_addsub_nc);
+  REFERENCE (refmpn_add_n_sub_nc);
 
 
   p = &param[TYPE_COPY];
@@ -875,19 +888,44 @@ param_init (void)
   p->size = SIZE_ALLOW_ZERO;
   REFERENCE (refmpn_copyd);
 
-  p = &param[TYPE_COM_N];
+  p = &param[TYPE_COM];
   p->dst[0] = 1;
   p->src[0] = 1;
-  REFERENCE (refmpn_com_n);
+  REFERENCE (refmpn_com);
 
 
   p = &param[TYPE_ADDLSH1_N];
   COPY (TYPE_ADD_N);
   REFERENCE (refmpn_addlsh1_n);
 
+  p = &param[TYPE_ADDLSH2_N];
+  COPY (TYPE_ADD_N);
+  REFERENCE (refmpn_addlsh2_n);
+
+  p = &param[TYPE_ADDLSH_N];
+  COPY (TYPE_ADD_N);
+  p->shift = 1;
+  REFERENCE (refmpn_addlsh_n);
+
   p = &param[TYPE_SUBLSH1_N];
   COPY (TYPE_ADD_N);
   REFERENCE (refmpn_sublsh1_n);
+
+  p = &param[TYPE_SUBLSH_N];
+  COPY (TYPE_ADDLSH_N);
+  REFERENCE (refmpn_sublsh_n);
+
+  p = &param[TYPE_RSBLSH1_N];
+  COPY (TYPE_ADD_N);
+  REFERENCE (refmpn_rsblsh1_n);
+
+  p = &param[TYPE_RSBLSH2_N];
+  COPY (TYPE_ADD_N);
+  REFERENCE (refmpn_rsblsh2_n);
+
+  p = &param[TYPE_RSBLSH_N];
+  COPY (TYPE_ADDLSH_N);
+  REFERENCE (refmpn_rsblsh_n);
 
   p = &param[TYPE_RSH1ADD_N];
   COPY (TYPE_ADD_N);
@@ -1064,6 +1102,11 @@ param_init (void)
   p->src[1] = 1;
   REFERENCE (refmpn_mul_n);
 
+  p = &param[TYPE_MULLO_N];
+  COPY (TYPE_MUL_N);
+  p->dst_size[0] = 0;
+  REFERENCE (refmpn_mullo_n);
+
   p = &param[TYPE_MUL_MN];
   COPY (TYPE_MUL_N);
   p->size2 = 1;
@@ -1095,6 +1138,11 @@ param_init (void)
   p->overlap = OVERLAP_HIGH_TO_LOW;
   REFERENCE (refmpn_lshift);
 
+  p = &param[TYPE_LSHIFTC];
+  COPY (TYPE_RSHIFT);
+  p->overlap = OVERLAP_HIGH_TO_LOW;
+  REFERENCE (refmpn_lshiftc);
+
 
   p = &param[TYPE_POPCOUNT];
   p->retval = 1;
@@ -1107,7 +1155,7 @@ param_init (void)
   REFERENCE (refmpn_hamdist);
 
 
-  p = &param[TYPE_SB_DIVREM_MN];
+  p = &param[TYPE_SBPI1_DIV_QR];
   p->retval = 1;
   p->dst[0] = 1;
   p->dst[1] = 1;
@@ -1117,7 +1165,7 @@ param_init (void)
   p->size2 = 1;
   p->dst_size[0] = SIZE_DIFF;
   p->overlap = OVERLAP_NONE;
-  REFERENCE (refmpn_sb_divrem_mn);
+  REFERENCE (refmpn_sb_div_qr);
 
   p = &param[TYPE_TDIV_QR];
   p->dst[0] = 1;
@@ -1157,6 +1205,20 @@ param_init (void)
   p->overlap = OVERLAP_NONE;
   REFERENCE (refmpn_get_str);
 
+  p = &param[TYPE_BINVERT];
+  p->dst[0] = 1;
+  p->src[0] = 1;
+  p->data = DATA_SRC0_ODD;
+  p->overlap = OVERLAP_NONE;
+  REFERENCE (refmpn_binvert);
+
+  p = &param[TYPE_INVERT];
+  p->dst[0] = 1;
+  p->src[0] = 1;
+  p->data = DATA_SRC0_HIGHBIT;
+  p->overlap = OVERLAP_NONE;
+  REFERENCE (refmpn_invert);
+
 #ifdef EXTRA_PARAM_INIT
   EXTRA_PARAM_INIT
 #endif
@@ -1189,8 +1251,8 @@ __GMPN_COPY_INCR_fun (mp_ptr rp, mp_srcptr sp, mp_size_t size)
 #endif
 
 void
-mpn_com_n_fun (mp_ptr rp, mp_srcptr sp, mp_size_t size)
-{ mpn_com_n (rp, sp, size); }
+mpn_com_fun (mp_ptr rp, mp_srcptr sp, mp_size_t size)
+{ mpn_com (rp, sp, size); }
 
 void
 mpn_and_n_fun (mp_ptr rp, mp_srcptr s1, mp_srcptr s2, mp_size_t size)
@@ -1245,43 +1307,66 @@ mpn_modexact_1_odd_fun (mp_srcptr ptr, mp_size_t size, mp_limb_t divisor)
 }
 
 void
-mpn_kara_mul_n_fun (mp_ptr dst, mp_srcptr src1, mp_srcptr src2, mp_size_t size)
+mpn_toom22_mul_fun (mp_ptr dst, mp_srcptr src1, mp_srcptr src2, mp_size_t size)
 {
   mp_ptr  tspace;
   TMP_DECL;
   TMP_MARK;
-  tspace = TMP_ALLOC_LIMBS (MPN_KARA_MUL_N_TSIZE (size));
-  mpn_kara_mul_n (dst, src1, src2, size, tspace);
+  tspace = TMP_ALLOC_LIMBS (mpn_toom22_mul_itch (size, size));
+  mpn_toom22_mul (dst, src1, size, src2, size, tspace);
+  TMP_FREE;
 }
 void
-mpn_kara_sqr_n_fun (mp_ptr dst, mp_srcptr src, mp_size_t size)
+mpn_toom2_sqr_fun (mp_ptr dst, mp_srcptr src, mp_size_t size)
 {
   mp_ptr tspace;
   TMP_DECL;
   TMP_MARK;
-  tspace = TMP_ALLOC_LIMBS (MPN_KARA_SQR_N_TSIZE (size));
-  mpn_kara_sqr_n (dst, src, size, tspace);
+  tspace = TMP_ALLOC_LIMBS (mpn_toom2_sqr_itch (size));
+  mpn_toom2_sqr (dst, src, size, tspace);
   TMP_FREE;
 }
 void
-mpn_toom3_mul_n_fun (mp_ptr dst, mp_srcptr src1, mp_srcptr src2, mp_size_t size)
+mpn_toom33_mul_fun (mp_ptr dst, mp_srcptr src1, mp_srcptr src2, mp_size_t size)
 {
   mp_ptr  tspace;
   TMP_DECL;
   TMP_MARK;
-  tspace = TMP_ALLOC_LIMBS (MPN_TOOM3_MUL_N_TSIZE (size));
-  mpn_toom3_mul_n (dst, src1, src2, size, tspace);
+  tspace = TMP_ALLOC_LIMBS (mpn_toom33_mul_itch (size, size));
+  mpn_toom33_mul (dst, src1, size, src2, size, tspace);
+  TMP_FREE;
 }
 void
-mpn_toom3_sqr_n_fun (mp_ptr dst, mp_srcptr src, mp_size_t size)
+mpn_toom3_sqr_fun (mp_ptr dst, mp_srcptr src, mp_size_t size)
 {
   mp_ptr tspace;
   TMP_DECL;
   TMP_MARK;
-  tspace = TMP_ALLOC_LIMBS (MPN_TOOM3_SQR_N_TSIZE (size));
-  mpn_toom3_sqr_n (dst, src, size, tspace);
+  tspace = TMP_ALLOC_LIMBS (mpn_toom3_sqr_itch (size));
+  mpn_toom3_sqr (dst, src, size, tspace);
   TMP_FREE;
 }
+void
+mpn_toom44_mul_fun (mp_ptr dst, mp_srcptr src1, mp_srcptr src2, mp_size_t size)
+{
+  mp_ptr  tspace;
+  TMP_DECL;
+  TMP_MARK;
+  tspace = TMP_ALLOC_LIMBS (mpn_toom44_mul_itch (size, size));
+  mpn_toom44_mul (dst, src1, size, src2, size, tspace);
+  TMP_FREE;
+}
+void
+mpn_toom4_sqr_fun (mp_ptr dst, mp_srcptr src, mp_size_t size)
+{
+  mp_ptr tspace;
+  TMP_DECL;
+  TMP_MARK;
+  tspace = TMP_ALLOC_LIMBS (mpn_toom4_sqr_itch (size));
+  mpn_toom4_sqr (dst, src, size, tspace);
+  TMP_FREE;
+}
+
 mp_limb_t
 umul_ppmm_fun (mp_limb_t *lowptr, mp_limb_t m1, mp_limb_t m2)
 {
@@ -1324,11 +1409,11 @@ const struct choice_t choice_array[] = {
   { TRY(mpn_sub_nc),    TYPE_SUB_NC },
 #endif
 
-#if HAVE_NATIVE_mpn_addsub_n
-  { TRY(mpn_addsub_n),  TYPE_ADDSUB_N  },
+#if HAVE_NATIVE_mpn_add_n_sub_n
+  { TRY(mpn_add_n_sub_n),  TYPE_ADDSUB_N  },
 #endif
-#if HAVE_NATIVE_mpn_addsub_nc
-  { TRY(mpn_addsub_nc), TYPE_ADDSUB_NC },
+#if HAVE_NATIVE_mpn_add_n_sub_nc
+  { TRY(mpn_add_n_sub_nc), TYPE_ADDSUB_NC },
 #endif
 
   { TRY(mpn_addmul_1),  TYPE_ADDMUL_1  },
@@ -1362,7 +1447,7 @@ const struct choice_t choice_array[] = {
   { TRY(mpn_addmul_8), TYPE_ADDMUL_8, 8 },
 #endif
 
-  { TRY_FUNFUN(mpn_com_n),  TYPE_COM_N },
+  { TRY_FUNFUN(mpn_com),  TYPE_COM },
 
   { TRY_FUNFUN(MPN_COPY),      TYPE_COPY },
   { TRY_FUNFUN(MPN_COPY_INCR), TYPE_COPYI },
@@ -1383,8 +1468,26 @@ const struct choice_t choice_array[] = {
 #if HAVE_NATIVE_mpn_addlsh1_n
   { TRY(mpn_addlsh1_n), TYPE_ADDLSH1_N },
 #endif
+#if HAVE_NATIVE_mpn_addlsh2_n
+  { TRY(mpn_addlsh2_n), TYPE_ADDLSH2_N },
+#endif
+#if HAVE_NATIVE_mpn_addlsh_n
+  { TRY(mpn_addlsh_n), TYPE_ADDLSH_N },
+#endif
 #if HAVE_NATIVE_mpn_sublsh1_n
   { TRY(mpn_sublsh1_n), TYPE_SUBLSH1_N },
+#endif
+#if HAVE_NATIVE_mpn_sublsh_n
+  { TRY(mpn_sublsh_n), TYPE_SUBLSH_N },
+#endif
+#if HAVE_NATIVE_mpn_rsblsh1_n
+  { TRY(mpn_rsblsh1_n), TYPE_RSBLSH1_N },
+#endif
+#if HAVE_NATIVE_mpn_rsblsh2_n
+  { TRY(mpn_rsblsh2_n), TYPE_RSBLSH2_N },
+#endif
+#if HAVE_NATIVE_mpn_rsblsh_n
+  { TRY(mpn_rsblsh_n), TYPE_RSBLSH_N },
 #endif
 #if HAVE_NATIVE_mpn_rsh1add_n
   { TRY(mpn_rsh1add_n), TYPE_RSH1ADD_N },
@@ -1436,7 +1539,7 @@ const struct choice_t choice_array[] = {
   { TRY(mpn_modexact_1c_odd),       TYPE_MODEXACT_1C_ODD },
 
 
-  { TRY(mpn_sb_divrem_mn), TYPE_SB_DIVREM_MN, 3},
+  { TRY(mpn_sbpi1_div_qr), TYPE_SBPI1_DIV_QR, 3},
   { TRY(mpn_tdiv_qr),      TYPE_TDIV_QR },
 
   { TRY(mpn_mul_1),      TYPE_MUL_1 },
@@ -1455,16 +1558,18 @@ const struct choice_t choice_array[] = {
 
   { TRY(mpn_rshift),     TYPE_RSHIFT },
   { TRY(mpn_lshift),     TYPE_LSHIFT },
+  { TRY(mpn_lshiftc),    TYPE_LSHIFTC },
 
 
   { TRY(mpn_mul_basecase), TYPE_MUL_MN },
-#if SQR_KARATSUBA_THRESHOLD > 0
+  { TRY(mpn_mullo_basecase), TYPE_MULLO_N },
+#if SQR_TOOM2_THRESHOLD > 0
   { TRY(mpn_sqr_basecase), TYPE_SQR },
 #endif
 
   { TRY(mpn_mul),    TYPE_MUL_MN },
   { TRY(mpn_mul_n),  TYPE_MUL_N },
-  { TRY(mpn_sqr_n),  TYPE_SQR },
+  { TRY(mpn_sqr),    TYPE_SQR },
 
   { TRY_FUNFUN(umul_ppmm), TYPE_UMUL_PPMM, 2 },
 #if HAVE_NATIVE_mpn_umul_ppmm
@@ -1474,10 +1579,12 @@ const struct choice_t choice_array[] = {
   { TRY(mpn_umul_ppmm_r),  TYPE_UMUL_PPMM_R, 2 },
 #endif
 
-  { TRY_FUNFUN(mpn_kara_mul_n),  TYPE_MUL_N, MPN_KARA_MUL_N_MINSIZE },
-  { TRY_FUNFUN(mpn_kara_sqr_n),  TYPE_SQR,   MPN_KARA_SQR_N_MINSIZE },
-  { TRY_FUNFUN(mpn_toom3_mul_n), TYPE_MUL_N, MPN_TOOM3_MUL_N_MINSIZE },
-  { TRY_FUNFUN(mpn_toom3_sqr_n), TYPE_SQR,   MPN_TOOM3_SQR_N_MINSIZE },
+  { TRY_FUNFUN(mpn_toom22_mul),  TYPE_MUL_N,  MPN_TOOM22_MUL_MINSIZE },
+  { TRY_FUNFUN(mpn_toom2_sqr),   TYPE_SQR,    MPN_TOOM2_SQR_MINSIZE },
+  { TRY_FUNFUN(mpn_toom33_mul),  TYPE_MUL_N,  MPN_TOOM33_MUL_MINSIZE },
+  { TRY_FUNFUN(mpn_toom3_sqr),   TYPE_SQR,    MPN_TOOM3_SQR_MINSIZE },
+  { TRY_FUNFUN(mpn_toom44_mul),  TYPE_MUL_N,  MPN_TOOM44_MUL_MINSIZE },
+  { TRY_FUNFUN(mpn_toom4_sqr),   TYPE_SQR,    MPN_TOOM4_SQR_MINSIZE },
 
   { TRY(mpn_gcd_1),        TYPE_GCD_1            },
   { TRY(mpn_gcd),          TYPE_GCD              },
@@ -1495,6 +1602,9 @@ const struct choice_t choice_array[] = {
   { TRY_FUNFUN(MPN_ZERO), TYPE_ZERO },
 
   { TRY(mpn_get_str),    TYPE_GET_STR },
+
+  { TRY(mpn_binvert),    TYPE_BINVERT },
+  { TRY(mpn_invert),     TYPE_INVERT  },
 
 #ifdef EXTRA_ROUTINES
   EXTRA_ROUTINES
@@ -1789,13 +1899,13 @@ print_each (const struct each_t *e)
 	    byte_tracen ("   d[%d]", i, e->d[i].p, d[i].size);
 	  else
 	    mpn_tracen ("   d[%d]", i, e->d[i].p, d[i].size);
-	  printf ("        located %p\n", e->d[i].p);
+	  printf ("        located %p\n", (void *) (e->d[i].p));
 	}
     }
 
   for (i = 0; i < NUM_SOURCES; i++)
     if (tr->src[i])
-      printf ("   s[%d] located %p\n", i, e->s[i].p);
+      printf ("   s[%d] located %p\n", i, (void *)  (e->s[i].p));
 }
 
 
@@ -1942,11 +2052,20 @@ call (struct each_t *e, tryfun_t function)
   case TYPE_ADD_N:
   case TYPE_SUB_N:
   case TYPE_ADDLSH1_N:
+  case TYPE_ADDLSH2_N:
   case TYPE_SUBLSH1_N:
+  case TYPE_RSBLSH1_N:
+  case TYPE_RSBLSH2_N:
   case TYPE_RSH1ADD_N:
   case TYPE_RSH1SUB_N:
     e->retval = CALLING_CONVENTIONS (function)
       (e->d[0].p, e->s[0].p, e->s[1].p, size);
+    break;
+  case TYPE_ADDLSH_N:
+  case TYPE_SUBLSH_N:
+  case TYPE_RSBLSH_N:
+    e->retval = CALLING_CONVENTIONS (function)
+      (e->d[0].p, e->s[0].p, e->s[1].p, size, shift);
     break;
   case TYPE_ADD_NC:
   case TYPE_SUB_NC:
@@ -2012,7 +2131,7 @@ call (struct each_t *e, tryfun_t function)
   case TYPE_COPY:
   case TYPE_COPYI:
   case TYPE_COPYD:
-  case TYPE_COM_N:
+  case TYPE_COM:
     CALLING_CONVENTIONS (function) (e->d[0].p, e->s[0].p, size);
     break;
 
@@ -2080,13 +2199,18 @@ call (struct each_t *e, tryfun_t function)
       (e->s[0].p[1], e->s[0].p[0], divisor, e->d[0].p);
     break;
 
-  case TYPE_SB_DIVREM_MN:
-    refmpn_copyi (e->d[1].p, e->s[0].p, size);        /* dividend */
-    refmpn_fill (e->d[0].p, size-size2, 0x98765432);  /* quotient */
-    e->retval = CALLING_CONVENTIONS (function)
-      (e->d[0].p, e->d[1].p, size, e->s[1].p, size2);
-    refmpn_zero (e->d[1].p+size2, size-size2);    /* excess over remainder */
+  case TYPE_SBPI1_DIV_QR:
+    {
+      gmp_pi1_t dinv;
+      invert_pi1 (dinv, e->s[1].p[size2-1], e->s[1].p[size2-2]); /* FIXME: use refinvert_pi1 */
+      refmpn_copyi (e->d[1].p, e->s[0].p, size);        /* dividend */
+      refmpn_fill (e->d[0].p, size-size2, 0x98765432);  /* quotient */
+      e->retval = CALLING_CONVENTIONS (function)
+	(e->d[0].p, e->d[1].p, size, e->s[1].p, size2, dinv.inv32);
+      refmpn_zero (e->d[1].p+size2, size-size2);    /* excess over remainder */
+    }
     break;
+
   case TYPE_TDIV_QR:
     CALLING_CONVENTIONS (function) (e->d[0].p, e->d[1].p, 0,
 				    e->s[0].p, size, e->s[1].p, size2);
@@ -2178,6 +2302,7 @@ call (struct each_t *e, tryfun_t function)
       (e->d[0].p, e->s[0].p, size, e->s[1].p, size2);
     break;
   case TYPE_MUL_N:
+  case TYPE_MULLO_N:
     CALLING_CONVENTIONS (function) (e->d[0].p, e->s[0].p, e->s[1].p, size);
     break;
   case TYPE_SQR:
@@ -2194,6 +2319,7 @@ call (struct each_t *e, tryfun_t function)
     break;
 
   case TYPE_LSHIFT:
+  case TYPE_LSHIFTC:
   case TYPE_RSHIFT:
     e->retval = CALLING_CONVENTIONS (function)
       (e->d[0].p, e->s[0].p, size, shift);
@@ -2245,7 +2371,28 @@ call (struct each_t *e, tryfun_t function)
 	  e->retval = CALLING_CONVENTIONS (function) (dst, base,
 						      e->d[1].p, size);
 	}
-      refmpn_zero (e->d[1].p, size);  /* cloberred or unused */
+      refmpn_zero (e->d[1].p, size);  /* clobbered or unused */
+    }
+    break;
+
+ case TYPE_INVERT:
+    {
+      mp_ptr scratch;
+      TMP_DECL;
+      TMP_MARK;
+      scratch = TMP_ALLOC_LIMBS (mpn_invert_itch (size));
+      CALLING_CONVENTIONS (function) (e->d[0].p, e->s[0].p, size, scratch);
+      TMP_FREE;
+    }
+    break;
+  case TYPE_BINVERT:
+    {
+      mp_ptr scratch;
+      TMP_DECL;
+      TMP_MARK;
+      scratch = TMP_ALLOC_LIMBS (mpn_binvert_itch (size));
+      CALLING_CONVENTIONS (function) (e->d[0].p, e->s[0].p, size, scratch);
+      TMP_FREE;
     }
     break;
 
@@ -2477,6 +2624,11 @@ try_one (void)
 	s[i].p[0] |= 1;
 	break;
 
+      case DATA_SRC0_ODD:
+	if (i == 0)
+	  s[i].p[0] |= 1;
+	break;
+
       case DATA_SRC1_ODD:
 	if (i == 1)
 	  s[i].p[0] |= 1;
@@ -2491,6 +2643,13 @@ try_one (void)
 	      s[i].p[size-1] |= GMP_NUMB_HIGHBIT;
 	  }
 	break;
+
+      case DATA_SRC0_HIGHBIT:
+       if (i == 0)
+         {
+           s[i].p[size-1] |= GMP_NUMB_HIGHBIT;
+         }
+       break;
 
       case DATA_UDIV_QRNND:
 	s[i].p[1] %= divisor;
@@ -2751,8 +2910,8 @@ Error, error, cannot get page size
       {
 	malloc_region (&s[i].region, 2*option_lastsize+ALIGNMENTS-1);
 	printf ("s[%d] %p to %p (0x%lX bytes)\n",
-		i, s[i].region.ptr,
-		s[i].region.ptr + s[i].region.size,
+		i, (void *) (s[i].region.ptr),
+		(void *) (s[i].region.ptr + s[i].region.size),
 		(long) s[i].region.size * BYTES_PER_MP_LIMB);
       }
 
@@ -2761,8 +2920,8 @@ Error, error, cannot get page size
       {                                                                 \
 	malloc_region (&e.d[i].region, 2*option_lastsize+ALIGNMENTS-1); \
 	printf ("%s d[%d] %p to %p (0x%lX bytes)\n",                    \
-		es, i, e.d[i].region.ptr,                               \
-		e.d[i].region.ptr + e.d[i].region.size,                 \
+		es, i, (void *) (e.d[i].region.ptr),			\
+		(void *)  (e.d[i].region.ptr + e.d[i].region.size),	\
 		(long) e.d[i].region.size * BYTES_PER_MP_LIMB);         \
       }
 

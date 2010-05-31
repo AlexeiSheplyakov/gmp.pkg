@@ -1,7 +1,7 @@
 dnl  GMP specific autoconf macros
 
 
-dnl  Copyright 2000, 2001, 2002, 2003, 2004, 2005, 2006 Free Software
+dnl  Copyright 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2009 Free Software
 dnl  Foundation, Inc.
 dnl
 dnl  This file is part of the GNU MP Library.
@@ -44,8 +44,10 @@ define(POWERPC64_PATTERN,
 [[powerpc64-*-* | powerpc64le-*-* | powerpc620-*-* | powerpc630-*-* | powerpc970-*-* | power[3-9]-*-*]])
 
 define(X86_PATTERN,
-[[i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-*]])
+[[i?86*-*-* | k[5-8]*-*-* | pentium*-*-* | athlon-*-* | viac3*-*-* | geode*-*-* | atom-*-*]])
 
+define(X86_64_PATTERN,
+[[athlon64-*-* | pentium4-*-* | atom-*-* | core2-*-* | corei-*-* | x86_64-*-* | nano-*-*]])
 
 dnl  GMP_FAT_SUFFIX(DSTVAR, DIRECTORY)
 dnl  ---------------------------------
@@ -68,7 +70,7 @@ define(GMP_FAT_SUFFIX,
 
 dnl  GMP_REMOVE_FROM_LIST(listvar,item)
 dnl  ----------------------------------
-dnl  Emit code to remove any occurance of ITEM from $LISTVAR.  ITEM can be a
+dnl  Emit code to remove any occurrence of ITEM from $LISTVAR.  ITEM can be a
 dnl  shell expression like $foo if desired.
 
 define(GMP_REMOVE_FROM_LIST,
@@ -110,13 +112,12 @@ dnl  Expand to the right way to #include gmp-h.in.  This must be used
 dnl  instead of gmp.h, since that file isn't generated until the end of the
 dnl  configure.
 dnl
-dnl  Dummy values for __GMP_BITS_PER_MP_LIMB and GMP_LIMB_BITS are enough
+dnl  Dummy value for GMP_LIMB_BITS is enough
 dnl  for all current configure-time uses of gmp.h.
 
 define(GMP_INCLUDE_GMP_H,
 [[#define __GMP_WITHIN_CONFIGURE 1   /* ignore template stuff */
 #define GMP_NAIL_BITS $GMP_NAIL_BITS
-#define __GMP_BITS_PER_MP_LIMB 123 /* dummy for GMP_NUMB_BITS etc */
 #define GMP_LIMB_BITS 123
 $DEFN_LONG_LONG_LIMB
 #include "$srcdir/gmp-h.in"]
@@ -189,7 +190,7 @@ esac
 dnl  GMP_COMPARE_GE(A1,B1, A2,B2, ...)
 dnl  ---------------------------------
 dnl  Compare two version numbers A1.A2.etc and B1.B2.etc.  Set
-dnl  $gmp_compare_ge to yes or no accoring to the result.  The A parts
+dnl  $gmp_compare_ge to yes or no according to the result.  The A parts
 dnl  should be variables, the B parts fixed numbers.  As many parts as
 dnl  desired can be included.  An empty string in an A part is taken to be
 dnl  zero, the B parts should be non-empty and non-zero.
@@ -252,7 +253,7 @@ dnl  For reference, $ARFLAGS is used by automake (1.8) for its ".a" archive
 dnl  file rules.  This doesn't get used by the piecewise linking, so we
 dnl  leave it at the default "cru".
 dnl
-dnl  FIXME: Libtool 1.5.2 has its own arrangments for "cq", but that version
+dnl  FIXME: Libtool 1.5.2 has its own arrangements for "cq", but that version
 dnl  is broken in other ways.  When we can upgrade, remove the forcible
 dnl  AR_FLAGS=cq.
 
@@ -590,7 +591,7 @@ GMP_PROG_CC_WORKS_PART([$1], [long long reliability test 1],
 
 #if defined (__GNUC__) && ! defined (__cplusplus)
 typedef unsigned long long t1;typedef t1*t2;
-__inline__ t1 e(t2 rp,t2 up,int n,t1 v0)
+static __inline__ t1 e(t2 rp,t2 up,int n,t1 v0)
 {t1 c,x,r;int i;if(v0){c=1;for(i=1;i<n;i++){x=up[i];r=x+1;rp[i]=r;}}return c;}
 f(){static const struct{t1 n;t1 src[9];t1 want[9];}d[]={{1,{0},{1}},};t1 got[9];int i;
 for(i=0;i<1;i++){if(e(got,got,9,d[i].n)==0)h();g(i,d[i].src,d[i].n,got,d[i].want,9);if(d[i].n)h();}}
@@ -1811,7 +1812,7 @@ dnl  Note that both solaris "as"s only care about ",0x90" if they actually
 dnl  have to use it to fill something, hence the .byte in the test.  It's
 dnl  the second .align which provokes the error or warning.
 dnl
-dnl  The warning from solaris 2.8 is supressed to stop anyone worrying that
+dnl  The warning from solaris 2.8 is suppressed to stop anyone worrying that
 dnl  something might be wrong.
 
 AC_DEFUN([GMP_ASM_ALIGN_FILL_0x90],
@@ -2184,7 +2185,7 @@ AC_REQUIRE([GMP_PROG_NM])
 AC_CACHE_CHECK([for assembler local label prefix],
                gmp_cv_asm_lsym_prefix,
 [gmp_tmp_pre_appears=yes
-for gmp_tmp_pre in L .L $ L$; do
+for gmp_tmp_pre in L .L $L $ L$; do
   echo "Trying $gmp_tmp_pre" >&AC_FD_CC
   GMP_TRY_ASSEMBLE(
 [	$gmp_cv_asm_text
@@ -3800,6 +3801,8 @@ dnl  GMP_C_FOR_BUILD_ANSI
 dnl  --------------------
 dnl  Determine whether CC_FOR_BUILD is ANSI, and establish U_FOR_BUILD
 dnl  accordingly.
+dnl
+dnl  FIXME: Use AC_PROG_CC sets ac_cv_prog_cc_c89 which could be used instead
 
 AC_DEFUN([GMP_C_FOR_BUILD_ANSI],
 [AC_REQUIRE([GMP_PROG_CC_FOR_BUILD])
@@ -3807,7 +3810,7 @@ AC_CACHE_CHECK([whether build system compiler is ANSI],
                gmp_cv_c_for_build_ansi,
 [cat >conftest.c <<EOF
 int
-main (int argc, char *argv[])
+main (int argc, char **argv)
 {
   exit(0);
 }

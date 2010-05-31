@@ -369,23 +369,14 @@ my @table =
      },
 
      {
-       'regexp'=> 'addsub_n',
+       'regexp'=> 'add_n_sub_n',
        'ret'   => 'mp_limb_t',
        'args'  => 'mp_ptr sum, mp_ptr diff, mp_srcptr xp, mp_srcptr yp, mp_size_t size',
        'speed_flags'=> 'FLAG_R_OPTIONAL',
      },
 
      {
-       'regexp'=> 'bdivmod',
-       'ret'   => 'mp_limb_t',
-       'args'  => 'mp_ptr qp, mp_ptr up, mp_size_t usize, mp_srcptr vp, mp_size_t vsize, unsigned long int d',
-       'carrys'=> [''],
-       'try'   => 'none',
-       'speed' => 'none',
-     },
-
-     {
-       'regexp'=> 'com_n|copyi|copyd',
+       'regexp'=> 'com|copyi|copyd',
        'ret'   => 'void',
        'args'  => 'mp_ptr wp, mp_srcptr xp, mp_size_t size',
        'speed' => 'SPEED_ROUTINE_MPN_COPY',

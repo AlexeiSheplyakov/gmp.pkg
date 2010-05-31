@@ -1,6 +1,6 @@
 ## Process this file with automake to generate Makefile.in
 
-# Copyright 2001, 2002, 2003 Free Software Foundation, Inc.
+# Copyright 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 #
 # This file is part of the GNU MP Library.
 #
@@ -21,8 +21,14 @@
 INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/tests
 LDADD = $(top_builddir)/tests/libtests.la $(top_builddir)/libgmp.la
 
-check_PROGRAMS = t-asmtype t-aors_1 t-divrem_1 t-fat t-get_d \
-  t-instrument t-iord_u t-mp_bases t-perfsqr t-scan t-hgcd t-matrix22
+check_PROGRAMS = t-asmtype t-aors_1 t-divrem_1 t-fat t-get_d	\
+  t-instrument t-iord_u t-mp_bases t-perfsqr t-scan		\
+  t-toom22 t-toom32 t-toom33 t-toom42 t-toom43 t-toom44 	\
+  t-toom52 t-toom53 t-toom62 t-toom63 t-toom6h t-toom8h		\
+  t-hgcd t-matrix22 t-mullo t-mulmod_bnm1 t-sqrmod_bnm1		\
+  t-invert t-div t-bdiv
+
+EXTRA_DIST = toom-shared.h
 
 TESTS = $(check_PROGRAMS)
 

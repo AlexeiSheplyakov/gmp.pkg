@@ -132,8 +132,8 @@ mp_limb_t (*calling_conventions_function) __GMP_PROTO ((ANYARGS));
 void *
 align_pointer (void *p, size_t align)
 {
-  unsigned long  d;
-  d = ((unsigned long) p) & (align-1);
+  gmp_intptr_t d;
+  d = ((gmp_intptr_t) p) & (align-1);
   d = (d != 0 ? align-d : 0);
   return (void *) (((char *) p) + d);
 }
@@ -370,11 +370,11 @@ urandom (void)
 {
 #if GMP_NAIL_BITS == 0
   mp_limb_t  n;
-  _gmp_rand (&n, RANDS, BITS_PER_MP_LIMB);
+  _gmp_rand (&n, RANDS, GMP_LIMB_BITS);
   return n;
 #else
   mp_limb_t n[2];
-  _gmp_rand (n, RANDS, BITS_PER_MP_LIMB);
+  _gmp_rand (n, RANDS, GMP_LIMB_BITS);
   return n[0] + (n[1] << GMP_NUMB_BITS);
 #endif
 }

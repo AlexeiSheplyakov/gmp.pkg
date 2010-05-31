@@ -24,7 +24,9 @@ C	     cycles/limb
 C K8,K9:	 2.2
 C K10:		 2.2
 C P4:		12.75
-C P6-15:	 3.45
+C P6 core2: 	 3.45
+C P6 corei7:	 3.45
+C P6 atom:	 ?
 
 
 C Sometimes speed degenerates, supposedly related to that some operand
@@ -102,7 +104,7 @@ L(b01):	add	%r8, %r8
 L(ent):	jns	L(end)
 
 	ALIGN(16)
-L(oop):	add	R32(%rax), R32(%rax)	C restore scy
+L(top):	add	R32(%rax), R32(%rax)	C restore scy
 
 	mov	(vp,n,8), %r8
 L(b00):	adc	%r8, %r8
@@ -131,7 +133,7 @@ L(b00):	adc	%r8, %r8
 
 	sbb	R32(%rbp), R32(%rbp)	C save acy
 	add	$4, n
-	js	L(oop)
+	js	L(top)
 
 L(end):	add	R32(%rbp), R32(%rax)
 	neg	R32(%rax)

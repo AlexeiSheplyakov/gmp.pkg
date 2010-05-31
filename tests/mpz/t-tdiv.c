@@ -43,12 +43,11 @@ main (int argc, char **argv)
   unsigned long bsi, size_range;
 
   tests_start ();
+  TESTS_REPS (reps, argv, argc);
+
   rands = RANDS;
 
   mpz_init (bs);
-
-  if (argc == 2)
-     reps = atoi (argv[1]);
 
   mpz_init (dividend);
   mpz_init (divisor);
@@ -61,7 +60,7 @@ main (int argc, char **argv)
   for (i = 0; i < reps; i++)
     {
       mpz_urandomb (bs, rands, 32);
-      size_range = mpz_get_ui (bs) % 16 + 2; /* 0..131071 bit operands */
+      size_range = mpz_get_ui (bs) % 18 + 2; /* 0..524288 bit operands */
 
       do
 	{

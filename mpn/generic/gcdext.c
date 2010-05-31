@@ -1,6 +1,6 @@
 /* mpn_gcdext -- Extended Greatest Common Divisor.
 
-Copyright 1996, 1998, 2000, 2001, 2002, 2003, 2004, 2005, 2008 Free Software
+Copyright 1996, 1998, 2000, 2001, 2002, 2003, 2004, 2005, 2008, 2009 Free Software
 Foundation, Inc.
 
 This file is part of the GNU MP Library.
@@ -118,6 +118,7 @@ compute_v (mp_ptr vp,
     mpn_mul (tp, up, size, ap, an);
 
   size += an;
+  size -= tp[size - 1] == 0;
 
   ASSERT (gn <= size);
 
@@ -146,21 +147,9 @@ compute_v (mp_ptr vp,
   vn = size + 1 - bn;
   ASSERT (vn <= n + 1);
 
-  /* FIXME: Use divexact. Or do the entire calculation mod 2^{n *
-     GMP_NUMB_BITS}. */
-  mpn_tdiv_qr (vp, tp, 0, tp, size, bp, bn);
+  mpn_divexact (vp, tp, size, bp, bn);
   vn -= (vp[vn-1] == 0);
 
-  /* Remainder must be zero */
-#if WANT_ASSERT
-  {
-    mp_size_t i;
-    for (i = 0; i < bn; i++)
-      {
-	ASSERT (tp[i] == 0);
-      }
-  }
-#endif
   return vn;
 }
 
@@ -181,7 +170,8 @@ compute_v (mp_ptr vp,
    For the lehmer call after the loop, Let T denote
    GCDEXT_DC_THRESHOLD. For the gcdext_lehmer call, we need T each for
    u, a and b, and 4T+3 scratch space. Next, for compute_v, we need T
-   + 1 for v and 2T + 1 scratch space. In all, 7T + 3 is sufficient.
+   for u, T+1 for v and 2T + 1 scratch space. In all, 7T + 3 is
+   sufficient for both operations.
 
 */
 
@@ -388,22 +378,27 @@ mpn_gcdext (mp_ptr gp, mp_ptr up, mp_size_t *usizep,
 	}
     }
 
-  if (mpn_zero_p (ap, n))
+  if (UNLIKELY (mpn_cmp (ap, bp, n) == 0))
     {
-      MPN_COPY (gp, bp, n);
-      MPN_NORMALIZE_NOT_ZERO (u0, un);
-      MPN_COPY (up, u0, un);
-      *usizep = -un;
+      /* Must return the smallest cofactor, +u1 or -u0 */
+      int c;
 
-      TMP_FREE;
-      return n;
-    }
-  else if (mpn_zero_p (bp, n))
-    {
       MPN_COPY (gp, ap, n);
-      MPN_NORMALIZE_NOT_ZERO (u1, un);
-      MPN_COPY (up, u1, un);
-      *usizep = un;
+
+      MPN_CMP (c, u0, u1, un);
+      ASSERT (c != 0);
+      if (c < 0)
+	{
+	  MPN_NORMALIZE (u0, un);
+	  MPN_COPY (up, u0, un);
+	  *usizep = -un;
+	}
+      else
+	{
+	  MPN_NORMALIZE_NOT_ZERO (u1, un);
+	  MPN_COPY (up, u1, un);
+	  *usizep = un;
+	}
 
       TMP_FREE;
       return n;
