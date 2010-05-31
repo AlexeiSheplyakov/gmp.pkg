@@ -1492,9 +1492,13 @@ check_misc (void)
   {
     char buf[128];
     ret = gmp_sscanf ("   ", "%s", buf);
+#ifndef _WIN32
     ASSERT_ALWAYS (ret == EOF);
+#endif
     ret = fromstring_gmp_fscanf ("   ", "%s", buf);
+#ifndef _WIN32
     ASSERT_ALWAYS (ret == EOF);
+#endif
     if (option_libc_scanf)
       {
         ret = sscanf ("   ", "%s", buf);
