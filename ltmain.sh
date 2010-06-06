@@ -1,10 +1,10 @@
 # Generated from ltmain.m4sh.
 
-# libtool (GNU libtool 1.3111 2009-07-24) 2.2.7a
+# libtool (GNU libtool 1.3170 2010-06-06) 2.2.9a
 # Written by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006,
-# 2007, 2008, 2009 Free Software Foundation, Inc.
+# 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 # This is free software; see the source for copying conditions.  There is NO
 # warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
@@ -70,7 +70,7 @@
 #         compiler:		$LTCC
 #         compiler flags:		$LTCFLAGS
 #         linker:		$LD (gnu? $with_gnu_ld)
-#         $progname:	(GNU libtool 1.3111 2009-07-24) 2.2.7a
+#         $progname:	(GNU libtool 1.3170 2010-06-06) 2.2.9a
 #         automake:	$automake_version
 #         autoconf:	$autoconf_version
 #
@@ -78,9 +78,9 @@
 
 PROGRAM=libtool
 PACKAGE=libtool
-VERSION=2.2.7a
-TIMESTAMP=" 1.3111 2009-07-24"
-package_revision=1.3111
+VERSION=2.2.9a
+TIMESTAMP=" 1.3170 2010-06-06"
+package_revision=1.3170
 
 # Be Bourne compatible
 if test -n "${ZSH_VERSION+set}" && (emulate sh) >/dev/null 2>&1; then
@@ -105,9 +105,6 @@ _LTECHO_EOF'
 }
 
 # NLS nuisances: We save the old values to restore during execute mode.
-# Only set LANG and LC_ALL to C if already set.
-# These must not be set unconditionally because not all systems understand
-# e.g. LANG=C (notably SCO).
 lt_user_locale=
 lt_safe_locale=
 for lt_var in LANG LANGUAGE LC_ALL LC_CTYPE LC_COLLATE LC_MESSAGES
@@ -120,9 +117,11 @@ do
 	  lt_safe_locale=\"$lt_var=C; \$lt_safe_locale\"
 	fi"
 done
+LC_ALL=C
+LANGUAGE=C
+export LANGUAGE LC_ALL
 
 $lt_unset CDPATH
-
 
 
 
@@ -139,7 +138,7 @@ progpath="$0"
 
 
 : ${CP="cp -f"}
-: ${ECHO=$as_echo}
+test "${ECHO+set}" = set || ECHO=${as_echo-'printf %s\n'}
 : ${EGREP="/bin/grep -E"}
 : ${FGREP="/bin/grep -F"}
 : ${GREP="/bin/grep"}
@@ -193,6 +192,154 @@ func_dirname_and_basename ()
 }
 
 # Generated shell functions inserted here.
+
+# These SED scripts presuppose an absolute path with a trailing slash.
+pathcar='s,^/\([^/]*\).*$,\1,'
+pathcdr='s,^/[^/]*,,'
+removedotparts=':dotsl
+		s@/\./@/@g
+		t dotsl
+		s,/\.$,/,'
+collapseslashes='s@/\{1,\}@/@g'
+finalslash='s,/*$,/,'
+
+# func_normal_abspath PATH
+# Remove doubled-up and trailing slashes, "." path components,
+# and cancel out any ".." path components in PATH after making
+# it an absolute path.
+#             value returned in "$func_normal_abspath_result"
+func_normal_abspath ()
+{
+  # Start from root dir and reassemble the path.
+  func_normal_abspath_result=
+  func_normal_abspath_tpath=$1
+  func_normal_abspath_altnamespace=
+  case $func_normal_abspath_tpath in
+    "")
+      # Empty path, that just means $cwd.
+      func_stripname '' '/' "`pwd`"
+      func_normal_abspath_result=$func_stripname_result
+      return
+    ;;
+    # The next three entries are used to spot a run of precisely
+    # two leading slashes without using negated character classes;
+    # we take advantage of case's first-match behaviour.
+    ///*)
+      # Unusual form of absolute path, do nothing.
+    ;;
+    //*)
+      # Not necessarily an ordinary path; POSIX reserves leading '//'
+      # and for example Cygwin uses it to access remote file shares
+      # over CIFS/SMB, so we conserve a leading double slash if found.
+      func_normal_abspath_altnamespace=/
+    ;;
+    /*)
+      # Absolute path, do nothing.
+    ;;
+    *)
+      # Relative path, prepend $cwd.
+      func_normal_abspath_tpath=`pwd`/$func_normal_abspath_tpath
+    ;;
+  esac
+  # Cancel out all the simple stuff to save iterations.  We also want
+  # the path to end with a slash for ease of parsing, so make sure
+  # there is one (and only one) here.
+  func_normal_abspath_tpath=`$ECHO "$func_normal_abspath_tpath" | $SED \
+        -e "$removedotparts" -e "$collapseslashes" -e "$finalslash"`
+  while :; do
+    # Processed it all yet?
+    if test "$func_normal_abspath_tpath" = / ; then
+      # If we ascended to the root using ".." the result may be empty now.
+      if test -z "$func_normal_abspath_result" ; then
+        func_normal_abspath_result=/
+      fi
+      break
+    fi
+    func_normal_abspath_tcomponent=`$ECHO "$func_normal_abspath_tpath" | $SED \
+        -e "$pathcar"`
+    func_normal_abspath_tpath=`$ECHO "$func_normal_abspath_tpath" | $SED \
+        -e "$pathcdr"`
+    # Figure out what to do with it
+    case $func_normal_abspath_tcomponent in
+      "")
+        # Trailing empty path component, ignore it.
+      ;;
+      ..)
+        # Parent dir; strip last assembled component from result.
+        func_dirname "$func_normal_abspath_result"
+        func_normal_abspath_result=$func_dirname_result
+      ;;
+      *)
+        # Actual path component, append it.
+        func_normal_abspath_result=$func_normal_abspath_result/$func_normal_abspath_tcomponent
+      ;;
+    esac
+  done
+  # Restore leading double-slash if one was found on entry.
+  func_normal_abspath_result=$func_normal_abspath_altnamespace$func_normal_abspath_result
+}
+
+# func_relative_path SRCDIR DSTDIR
+# generates a relative path from SRCDIR to DSTDIR, with a trailing
+# slash if non-empty, suitable for immediately appending a filename
+# without needing to append a separator.
+#             value returned in "$func_relative_path_result"
+func_relative_path ()
+{
+  func_relative_path_result=
+  func_normal_abspath "$1"
+  func_relative_path_tlibdir=$func_normal_abspath_result
+  func_normal_abspath "$2"
+  func_relative_path_tbindir=$func_normal_abspath_result
+
+  # Ascend the tree starting from libdir
+  while :; do
+    # check if we have found a prefix of bindir
+    case $func_relative_path_tbindir in
+      $func_relative_path_tlibdir)
+        # found an exact match
+        func_relative_path_tcancelled=
+        break
+        ;;
+      $func_relative_path_tlibdir*)
+        # found a matching prefix
+        func_stripname "$func_relative_path_tlibdir" '' "$func_relative_path_tbindir"
+        func_relative_path_tcancelled=$func_stripname_result
+        if test -z "$func_relative_path_result"; then
+          func_relative_path_result=.
+        fi
+        break
+        ;;
+      *)
+        func_dirname $func_relative_path_tlibdir
+        func_relative_path_tlibdir=${func_dirname_result}
+        if test "x$func_relative_path_tlibdir" = x ; then
+          # Have to descend all the way to the root!
+          func_relative_path_result=../$func_relative_path_result
+          func_relative_path_tcancelled=$func_relative_path_tbindir
+          break
+        fi
+        func_relative_path_result=../$func_relative_path_result
+        ;;
+    esac
+  done
+
+  # Now calculate path; take care to avoid doubling-up slashes.
+  func_stripname '' '/' "$func_relative_path_result"
+  func_relative_path_result=$func_stripname_result
+  func_stripname '/' '/' "$func_relative_path_tcancelled"
+  if test "x$func_stripname_result" != x ; then
+    func_relative_path_result=${func_relative_path_result}/${func_stripname_result}
+  fi
+
+  # Normalisation. If bindir is libdir, return empty string,
+  # else relative path ending with a slash; either way, target
+  # file name can be directly appended.
+  if test ! -z "$func_relative_path_result"; then
+    func_stripname './' '' "$func_relative_path_result/"
+    func_relative_path_result=$func_stripname_result
+  fi
+}
 
 # The name of this program:
 func_dirname_and_basename "$progpath"
@@ -509,8 +656,6 @@ func_show_eval_locale ()
 
 
 
-
-
 # func_version
 # Echo version message to standard output and exit.
 func_version ()
@@ -536,7 +681,7 @@ func_version ()
 # Echo short help message to standard output and exit.
 func_usage ()
 {
-    $SED -n '/^# Usage:/,/^#  *-h/ {
+    $SED -n '/^# Usage:/,/^#  *.*--help/ {
         s/^# //
 	s/^# *$//
 	s/\$progname/'$progname'/
@@ -577,7 +722,7 @@ func_help ()
 # exit_cmd.
 func_missing_arg ()
 {
-    func_error "missing argument for $1"
+    func_error "missing argument for $1."
     exit_cmd=exit
 }
 
@@ -1239,7 +1384,7 @@ func_mode_compile ()
     *.[cCFSifmso] | \
     *.ada | *.adb | *.ads | *.asm | \
     *.c++ | *.cc | *.ii | *.class | *.cpp | *.cxx | \
-    *.[fF][09]? | *.for | *.java | *.obj | *.sx)
+    *.[fF][09]? | *.for | *.java | *.obj | *.sx | *.cu | *.cup)
       func_xform "$libobj"
       libobj=$func_xform_result
       ;;
@@ -1508,8 +1653,8 @@ This mode accepts the following additional options:
 
   -o OUTPUT-FILE    set the output file name to OUTPUT-FILE
   -no-suppress      do not suppress compiler output for multiple passes
-  -prefer-pic       try to building PIC objects only
-  -prefer-non-pic   try to building non-PIC objects only
+  -prefer-pic       try to build PIC objects only
+  -prefer-non-pic   try to build non-PIC objects only
   -shared           do not build a \`.o' file suitable for static linking
   -static           only build a \`.o' file suitable for static linking
   -Wc,FLAG          pass FLAG directly to the compiler
@@ -1585,6 +1730,8 @@ The following components of LINK-COMMAND are treated specially:
 
   -all-static       do not do any dynamic linking at all
   -avoid-version    do not add a version suffix if possible
+  -bindir BINDIR    specify path to binaries directory (for systems where
+                    libraries must be found in the PATH setting at runtime)
   -dlopen FILE      \`-dlpreopen' FILE if it cannot be dlopened at runtime
   -dlpreopen FILE   link in FILE and add its symbols to lt_preloaded_symbols
   -export-dynamic   allow symbols from OUTPUT-FILE to be resolved with dlsym(3)
@@ -2402,6 +2549,10 @@ func_generate_dlsyms ()
 extern \"C\" {
 #endif
 
+#if defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 4)) || (__GNUC__ > 4))
+#pragma GCC diagnostic ignored \"-Wstrict-prototypes\"
+#endif
+
 /* External symbol declarations for the compiler. */\
 "
 
@@ -2639,8 +2790,9 @@ func_win32_libid ()
     win32_libid_type="x86 archive import"
     ;;
   *ar\ archive*) # could be an import, or static
+    # Keep the egrep pattern in sync with the one in _LT_CHECK_MAGIC_METHOD.
     if eval $OBJDUMP -f $1 | $SED -e '10q' 2>/dev/null |
-       $EGREP 'file format (pe-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64)' >/dev/null; then
+       $EGREP 'file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64)' >/dev/null; then
       win32_nmres=`eval $NM -f posix -A $1 |
 	$SED -n -e '
 	    1,100{
@@ -2760,7 +2912,7 @@ func_extract_archives ()
 	    darwin_file=
 	    darwin_files=
 	    for darwin_file in $darwin_filelist; do
-	      darwin_files=`find unfat-$$ -name $darwin_file -print | $NL2SP`
+	      darwin_files=`find unfat-$$ -name $darwin_file -print | sort | $NL2SP`
 	      $LIPO -create -output "$darwin_file" $darwin_files
 	    done # $darwin_filelist
 	    $RM -rf unfat-$$
@@ -2775,7 +2927,7 @@ func_extract_archives ()
         func_extract_an_archive "$my_xdir" "$my_xabs"
 	;;
       esac
-      my_oldobjs="$my_oldobjs "`find $my_xdir -name \*.$objext -print -o -name \*.lo -print | $NL2SP`
+      my_oldobjs="$my_oldobjs "`find $my_xdir -name \*.$objext -print -o -name \*.lo -print | sort | $NL2SP`
     done
 
     func_extract_archives_result="$my_oldobjs"
@@ -2857,7 +3009,110 @@ func_fallback_echo ()
 _LTECHO_EOF'
 }
     ECHO=\"$qECHO\"
-  fi\
+  fi
+
+# Very basic option parsing. These options are (a) specific to
+# the libtool wrapper, (b) are identical between the wrapper
+# /script/ and the wrapper /executable/ which is used only on
+# windows platforms, and (c) all begin with the string "--lt-"
+# (application programs are unlikely to have options which match
+# this pattern).
+#
+# There are only two supported options: --lt-debug and
+# --lt-dump-script. There is, deliberately, no --lt-help.
+#
+# The first argument to this parsing function should be the
+# script's $0 value, followed by "$@".
+lt_option_debug=
+func_parse_lt_options ()
+{
+  lt_script_arg0=\$0
+  shift
+  for lt_opt
+  do
+    case \"\$lt_opt\" in
+    --lt-debug) lt_option_debug=1 ;;
+    --lt-dump-script)
+        lt_dump_D=\`\$ECHO \"X\$lt_script_arg0\" | $SED -e 's/^X//' -e 's%/[^/]*$%%'\`
+        test \"X\$lt_dump_D\" = \"X\$lt_script_arg0\" && lt_dump_D=.
+        lt_dump_F=\`\$ECHO \"X\$lt_script_arg0\" | $SED -e 's/^X//' -e 's%^.*/%%'\`
+        cat \"\$lt_dump_D/\$lt_dump_F\"
+        exit 0
+      ;;
+    --lt-*)
+        \$ECHO \"Unrecognized --lt- option: '\$lt_opt'\" 1>&2
+        exit 1
+      ;;
+    esac
+  done
+
+  # Print the debug banner immediately:
+  if test -n \"\$lt_option_debug\"; then
+    echo \"${outputname}:${output}:\${LINENO}: libtool wrapper (GNU $PACKAGE$TIMESTAMP) $VERSION\" 1>&2
+  fi
+}
+
+# Used when --lt-debug. Prints its arguments to stdout
+# (redirection is the responsibility of the caller)
+func_lt_dump_args ()
+{
+  lt_dump_args_N=1;
+  for lt_arg
+  do
+    \$ECHO \"${outputname}:${output}:\${LINENO}: newargv[\$lt_dump_args_N]: \$lt_arg\"
+    lt_dump_args_N=\`expr \$lt_dump_args_N + 1\`
+  done
+}
+
+# Core function for launching the target application
+func_exec_program_core ()
+{
+"
+  case $host in
+  # Backslashes separate directories on plain windows
+  *-*-mingw | *-*-os2* | *-cegcc*)
+    $ECHO "\
+      if test -n \"\$lt_option_debug\"; then
+        \$ECHO \"${outputname}:${output}:\${LINENO}: newargv[0]: \$progdir\\\\\$program\" 1>&2
+        func_lt_dump_args \${1+\"\$@\"} 1>&2
+      fi
+      exec \"\$progdir\\\\\$program\" \${1+\"\$@\"}
+"
+    ;;
+
+  *)
+    $ECHO "\
+      if test -n \"\$lt_option_debug\"; then
+        \$ECHO \"${outputname}:${output}:\${LINENO}: newargv[0]: \$progdir/\$program\" 1>&2
+        func_lt_dump_args \${1+\"\$@\"} 1>&2
+      fi
+      exec \"\$progdir/\$program\" \${1+\"\$@\"}
+"
+    ;;
+  esac
+  $ECHO "\
+      \$ECHO \"\$0: cannot exec \$program \$*\" 1>&2
+      exit 1
+}
+
+# A function to encapsulate launching the target application
+# Strips options in the --lt-* namespace from \$@ and
+# launches target application with the remaining arguments.
+func_exec_program ()
+{
+  for lt_wr_arg
+  do
+    case \$lt_wr_arg in
+    --lt-*) ;;
+    *) set x \"\$@\" \"\$lt_wr_arg\"; shift;;
+    esac
+    shift
+  done
+  func_exec_program_core \${1+\"\$@\"}
+}
+
+  # Parse options
+  func_parse_lt_options \"\$0\" \${1+\"\$@\"}
 
   # Find the directory that this script lives in.
   thisdir=\`\$ECHO \"\$file\" | $SED 's%/[^/]*$%%'\`
@@ -2970,24 +3225,7 @@ _LTECHO_EOF'
 	$ECHO "\
     if test \"\$libtool_execute_magic\" != \"$magic\"; then
       # Run the actual program with our arguments.
-"
-	case $host in
-	# Backslashes separate directories on plain windows
-	*-*-mingw | *-*-os2* | *-cegcc*)
-	  $ECHO "\
-      exec \"\$progdir\\\\\$program\" \${1+\"\$@\"}
-"
-	  ;;
-
-	*)
-	  $ECHO "\
-      exec \"\$progdir/\$program\" \${1+\"\$@\"}
-"
-	  ;;
-	esac
-	$ECHO "\
-      \$ECHO \"\$0: cannot exec \$program \$*\" 1>&2
-      exit 1
+      func_exec_program \${1+\"\$@\"}
     fi
   else
     # The program doesn't exist.
@@ -3177,10 +3415,6 @@ func_emit_cwrapperexe_src ()
 
    This wrapper executable should never be moved out of the build directory.
    If it is, it will not operate correctly.
-
-   Currently, it simply execs the wrapper *script* "$SHELL $output",
-   but could eventually absorb all of the scripts functionality and
-   exec $objdir/$outputname directly.
 */
 EOF
 	    cat <<"EOF"
@@ -3305,22 +3539,13 @@ int setenv (const char *, const char *, int);
   if (stale) { free ((void *) stale); stale = 0; } \
 } while (0)
 
-#undef LTWRAPPER_DEBUGPRINTF
-#if defined LT_DEBUGWRAPPER
-# define LTWRAPPER_DEBUGPRINTF(args) ltwrapper_debugprintf args
-static void
-ltwrapper_debugprintf (const char *fmt, ...)
-{
-    va_list args;
-    va_start (args, fmt);
-    (void) vfprintf (stderr, fmt, args);
-    va_end (args);
-}
+#if defined(LT_DEBUGWRAPPER)
+static int lt_debug = 1;
 #else
-# define LTWRAPPER_DEBUGPRINTF(args)
+static int lt_debug = 0;
 #endif
 
-const char *program_name = NULL;
+const char *program_name = "libtool-wrapper"; /* in case xstrdup fails */
 
 void *xmalloc (size_t num);
 char *xstrdup (const char *string);
@@ -3330,7 +3555,10 @@ char *chase_symlinks (const char *pathspec);
 int make_executable (const char *path);
 int check_executable (const char *path);
 char *strendzap (char *str, const char *pat);
-void lt_fatal (const char *message, ...);
+void lt_debugprintf (const char *file, int line, const char *fmt, ...);
+void lt_fatal (const char *file, int line, const char *message, ...);
+static const char *nonnull (const char *s);
+static const char *nonempty (const char *s);
 void lt_setenv (const char *name, const char *value);
 char *lt_extend_str (const char *orig_value, const char *add, int to_end);
 void lt_update_exe_path (const char *name, const char *value);
@@ -3382,12 +3610,10 @@ EOF
 	    cat <<"EOF"
 
 #define LTWRAPPER_OPTION_PREFIX         "--lt-"
-#define LTWRAPPER_OPTION_PREFIX_LENGTH  5
 
-static const size_t opt_prefix_len         = LTWRAPPER_OPTION_PREFIX_LENGTH;
 static const char *ltwrapper_option_prefix = LTWRAPPER_OPTION_PREFIX;
-
 static const char *dumpscript_opt       = LTWRAPPER_OPTION_PREFIX "dump-script";
+static const char *debug_opt            = LTWRAPPER_OPTION_PREFIX "debug";
 
 int
 main (int argc, char *argv[])
@@ -3404,10 +3630,13 @@ main (int argc, char *argv[])
   int i;
 
   program_name = (char *) xstrdup (base_name (argv[0]));
-  LTWRAPPER_DEBUGPRINTF (("(main) argv[0]      : %s\n", argv[0]));
-  LTWRAPPER_DEBUGPRINTF (("(main) program_name : %s\n", program_name));
+  newargz = XMALLOC (char *, argc + 1);
 
-  /* very simple arg parsing; don't want to rely on getopt */
+  /* very simple arg parsing; don't want to rely on getopt
+   * also, copy all non cwrapper options to newargz, except
+   * argz[0], which is handled differently
+   */
+  newargc=0;
   for (i = 1; i < argc; i++)
     {
       if (strcmp (argv[i], dumpscript_opt) == 0)
@@ -3424,21 +3653,54 @@ EOF
 	  lt_dump_script (stdout);
 	  return 0;
 	}
+      if (strcmp (argv[i], debug_opt) == 0)
+	{
+          lt_debug = 1;
+          continue;
+	}
+      if (strcmp (argv[i], ltwrapper_option_prefix) == 0)
+        {
+          /* however, if there is an option in the LTWRAPPER_OPTION_PREFIX
+             namespace, but it is not one of the ones we know about and
+             have already dealt with, above (inluding dump-script), then
+             report an error. Otherwise, targets might begin to believe
+             they are allowed to use options in the LTWRAPPER_OPTION_PREFIX
+             namespace. The first time any user complains about this, we'll
+             need to make LTWRAPPER_OPTION_PREFIX a configure-time option
+             or a configure.ac-settable value.
+           */
+          lt_fatal (__FILE__, __LINE__,
+		    "unrecognized %s option: '%s'",
+                    ltwrapper_option_prefix, argv[i]);
+        }
+      /* otherwise ... */
+      newargz[++newargc] = xstrdup (argv[i]);
     }
+  newargz[++newargc] = NULL;
 
-  newargz = XMALLOC (char *, argc + 1);
+EOF
+	    cat <<EOF
+  /* The GNU banner must be the first non-error debug message */
+  lt_debugprintf (__FILE__, __LINE__, "libtool wrapper (GNU $PACKAGE$TIMESTAMP) $VERSION\n");
+EOF
+	    cat <<"EOF"
+  lt_debugprintf (__FILE__, __LINE__, "(main) argv[0]: %s\n", argv[0]);
+  lt_debugprintf (__FILE__, __LINE__, "(main) program_name: %s\n", program_name);
+
   tmp_pathspec = find_executable (argv[0]);
   if (tmp_pathspec == NULL)
-    lt_fatal ("Couldn't find %s", argv[0]);
-  LTWRAPPER_DEBUGPRINTF (("(main) found exe (before symlink chase) at : %s\n",
-			  tmp_pathspec));
+    lt_fatal (__FILE__, __LINE__, "couldn't find %s", argv[0]);
+  lt_debugprintf (__FILE__, __LINE__,
+                  "(main) found exe (before symlink chase) at: %s\n",
+		  tmp_pathspec);
 
   actual_cwrapper_path = chase_symlinks (tmp_pathspec);
-  LTWRAPPER_DEBUGPRINTF (("(main) found exe (after symlink chase) at : %s\n",
-			  actual_cwrapper_path));
+  lt_debugprintf (__FILE__, __LINE__,
+                  "(main) found exe (after symlink chase) at: %s\n",
+		  actual_cwrapper_path);
   XFREE (tmp_pathspec);
 
-  actual_cwrapper_name = xstrdup( base_name (actual_cwrapper_path));
+  actual_cwrapper_name = xstrdup (base_name (actual_cwrapper_path));
   strendzap (actual_cwrapper_path, actual_cwrapper_name);
 
   /* wrapper name transforms */
@@ -3456,8 +3718,9 @@ EOF
   target_name = tmp_pathspec;
   tmp_pathspec = 0;
 
-  LTWRAPPER_DEBUGPRINTF (("(main) libtool target name: %s\n",
-			  target_name));
+  lt_debugprintf (__FILE__, __LINE__,
+		  "(main) libtool target name: %s\n",
+		  target_name);
 EOF
 
 	    cat <<EOF
@@ -3510,32 +3773,12 @@ EOF
   lt_update_lib_path (LIB_PATH_VARNAME, LIB_PATH_VALUE);
   lt_update_exe_path (EXE_PATH_VARNAME, EXE_PATH_VALUE);
 
-  newargc=0;
-  for (i = 1; i < argc; i++)
-    {
-      if (strncmp (argv[i], ltwrapper_option_prefix, opt_prefix_len) == 0)
-        {
-          /* however, if there is an option in the LTWRAPPER_OPTION_PREFIX
-             namespace, but it is not one of the ones we know about and
-             have already dealt with, above (inluding dump-script), then
-             report an error. Otherwise, targets might begin to believe
-             they are allowed to use options in the LTWRAPPER_OPTION_PREFIX
-             namespace. The first time any user complains about this, we'll
-             need to make LTWRAPPER_OPTION_PREFIX a configure-time option
-             or a configure.ac-settable value.
-           */
-          lt_fatal ("Unrecognized option in %s namespace: '%s'",
-                    ltwrapper_option_prefix, argv[i]);
-        }
-      /* otherwise ... */
-      newargz[++newargc] = xstrdup (argv[i]);
-    }
-  newargz[++newargc] = NULL;
-
-  LTWRAPPER_DEBUGPRINTF     (("(main) lt_argv_zero : %s\n", (lt_argv_zero ? lt_argv_zero : "<NULL>")));
+  lt_debugprintf (__FILE__, __LINE__, "(main) lt_argv_zero: %s\n",
+		  nonnull (lt_argv_zero));
   for (i = 0; i < newargc; i++)
     {
-      LTWRAPPER_DEBUGPRINTF (("(main) newargz[%d]   : %s\n", i, (newargz[i] ? newargz[i] : "<NULL>")));
+      lt_debugprintf (__FILE__, __LINE__, "(main) newargz[%d]: %s\n",
+		      i, nonnull (newargz[i]));
     }
 
 EOF
@@ -3549,7 +3792,9 @@ EOF
   if (rval == -1)
     {
       /* failed to start process */
-      LTWRAPPER_DEBUGPRINTF (("(main) failed to launch target \"%s\": errno = %d\n", lt_argv_zero, errno));
+      lt_debugprintf (__FILE__, __LINE__,
+		      "(main) failed to launch target \"%s\": %s\n",
+		      lt_argv_zero, nonnull (strerror (errno)));
       return 127;
     }
   return rval;
@@ -3571,7 +3816,7 @@ xmalloc (size_t num)
 {
   void *p = (void *) malloc (num);
   if (!p)
-    lt_fatal ("Memory exhausted");
+    lt_fatal (__FILE__, __LINE__, "memory exhausted");
 
   return p;
 }
@@ -3605,8 +3850,8 @@ check_executable (const char *path)
 {
   struct stat st;
 
-  LTWRAPPER_DEBUGPRINTF (("(check_executable)  : %s\n",
-			  path ? (*path ? path : "EMPTY!") : "NULL!"));
+  lt_debugprintf (__FILE__, __LINE__, "(check_executable): %s\n",
+                  nonempty (path));
   if ((!path) || (!*path))
     return 0;
 
@@ -3623,8 +3868,8 @@ make_executable (const char *path)
   int rval = 0;
   struct stat st;
 
-  LTWRAPPER_DEBUGPRINTF (("(make_executable)   : %s\n",
-			  path ? (*path ? path : "EMPTY!") : "NULL!"));
+  lt_debugprintf (__FILE__, __LINE__, "(make_executable): %s\n",
+                  nonempty (path));
   if ((!path) || (!*path))
     return 0;
 
@@ -3650,8 +3895,8 @@ find_executable (const char *wrapper)
   int tmp_len;
   char *concat_name;
 
-  LTWRAPPER_DEBUGPRINTF (("(find_executable)   : %s\n",
-			  wrapper ? (*wrapper ? wrapper : "EMPTY!") : "NULL!"));
+  lt_debugprintf (__FILE__, __LINE__, "(find_executable): %s\n",
+                  nonempty (wrapper));
 
   if ((wrapper == NULL) || (*wrapper == '\0'))
     return NULL;
@@ -3704,7 +3949,8 @@ find_executable (const char *wrapper)
 		{
 		  /* empty path: current directory */
 		  if (getcwd (tmp, LT_PATHMAX) == NULL)
-		    lt_fatal ("getcwd failed");
+		    lt_fatal (__FILE__, __LINE__, "getcwd failed: %s",
+                              nonnull (strerror (errno)));
 		  tmp_len = strlen (tmp);
 		  concat_name =
 		    XMALLOC (char, tmp_len + 1 + strlen (wrapper) + 1);
@@ -3729,7 +3975,8 @@ find_executable (const char *wrapper)
     }
   /* Relative path | not found in path: prepend cwd */
   if (getcwd (tmp, LT_PATHMAX) == NULL)
-    lt_fatal ("getcwd failed");
+    lt_fatal (__FILE__, __LINE__, "getcwd failed: %s",
+              nonnull (strerror (errno)));
   tmp_len = strlen (tmp);
   concat_name = XMALLOC (char, tmp_len + 1 + strlen (wrapper) + 1);
   memcpy (concat_name, tmp, tmp_len);
@@ -3755,8 +4002,9 @@ chase_symlinks (const char *pathspec)
   int has_symlinks = 0;
   while (strlen (tmp_pathspec) && !has_symlinks)
     {
-      LTWRAPPER_DEBUGPRINTF (("checking path component for symlinks: %s\n",
-			      tmp_pathspec));
+      lt_debugprintf (__FILE__, __LINE__,
+		      "checking path component for symlinks: %s\n",
+		      tmp_pathspec);
       if (lstat (tmp_pathspec, &s) == 0)
 	{
 	  if (S_ISLNK (s.st_mode) != 0)
@@ -3778,8 +4026,9 @@ chase_symlinks (const char *pathspec)
 	}
       else
 	{
-	  char *errstr = strerror (errno);
-	  lt_fatal ("Error accessing file %s (%s)", tmp_pathspec, errstr);
+	  lt_fatal (__FILE__, __LINE__,
+		    "error accessing file \"%s\": %s",
+		    tmp_pathspec, nonnull (strerror (errno)));
 	}
     }
   XFREE (tmp_pathspec);
@@ -3792,7 +4041,8 @@ chase_symlinks (const char *pathspec)
   tmp_pathspec = realpath (pathspec, buf);
   if (tmp_pathspec == 0)
     {
-      lt_fatal ("Could not follow symlinks for %s", pathspec);
+      lt_fatal (__FILE__, __LINE__,
+		"could not follow symlinks for %s", pathspec);
     }
   return xstrdup (tmp_pathspec);
 #endif
@@ -3818,11 +4068,25 @@ strendzap (char *str, const char *pat)
   return str;
 }
 
+void
+lt_debugprintf (const char *file, int line, const char *fmt, ...)
+{
+  va_list args;
+  if (lt_debug)
+    {
+      (void) fprintf (stderr, "%s:%s:%d: ", program_name, file, line);
+      va_start (args, fmt);
+      (void) vfprintf (stderr, fmt, args);
+      va_end (args);
+    }
+}
+
 static void
-lt_error_core (int exit_status, const char *mode,
+lt_error_core (int exit_status, const char *file,
+	       int line, const char *mode,
 	       const char *message, va_list ap)
 {
-  fprintf (stderr, "%s: %s: ", program_name, mode);
+  fprintf (stderr, "%s:%s:%d: %s: ", program_name, file, line, mode);
   vfprintf (stderr, message, ap);
   fprintf (stderr, ".\n");
 
@@ -3831,20 +4095,32 @@ lt_error_core (int exit_status, const char *mode,
 }
 
 void
-lt_fatal (const char *message, ...)
+lt_fatal (const char *file, int line, const char *message, ...)
 {
   va_list ap;
   va_start (ap, message);
-  lt_error_core (EXIT_FAILURE, "FATAL", message, ap);
+  lt_error_core (EXIT_FAILURE, file, line, "FATAL", message, ap);
   va_end (ap);
+}
+
+static const char *
+nonnull (const char *s)
+{
+  return s ? s : "(null)";
+}
+
+static const char *
+nonempty (const char *s)
+{
+  return (s && !*s) ? "(empty)" : nonnull (s);
 }
 
 void
 lt_setenv (const char *name, const char *value)
 {
-  LTWRAPPER_DEBUGPRINTF (("(lt_setenv) setting '%s' to '%s'\n",
-                          (name ? name : "<NULL>"),
-                          (value ? value : "<NULL>")));
+  lt_debugprintf (__FILE__, __LINE__,
+		  "(lt_setenv) setting '%s' to '%s'\n",
+                  nonnull (name), nonnull (value));
   {
 #ifdef HAVE_SETENV
     /* always make a copy, for consistency with !HAVE_SETENV */
@@ -3892,9 +4168,9 @@ lt_extend_str (const char *orig_value, const char *add, int to_end)
 void
 lt_update_exe_path (const char *name, const char *value)
 {
-  LTWRAPPER_DEBUGPRINTF (("(lt_update_exe_path) modifying '%s' by prepending '%s'\n",
-                          (name ? name : "<NULL>"),
-                          (value ? value : "<NULL>")));
+  lt_debugprintf (__FILE__, __LINE__,
+		  "(lt_update_exe_path) modifying '%s' by prepending '%s'\n",
+                  nonnull (name), nonnull (value));
 
   if (name && *name && value && *value)
     {
@@ -3913,9 +4189,9 @@ lt_update_exe_path (const char *name, const char *value)
 void
 lt_update_lib_path (const char *name, const char *value)
 {
-  LTWRAPPER_DEBUGPRINTF (("(lt_update_lib_path) modifying '%s' by prepending '%s'\n",
-                          (name ? name : "<NULL>"),
-                          (value ? value : "<NULL>")));
+  lt_debugprintf (__FILE__, __LINE__,
+		  "(lt_update_lib_path) modifying '%s' by prepending '%s'\n",
+                  nonnull (name), nonnull (value));
 
   if (name && *name && value && *value)
     {
@@ -4115,6 +4391,7 @@ func_mode_link ()
     new_inherited_linker_flags=
 
     avoid_version=no
+    bindir=
     dlfiles=
     dlprefiles=
     dlself=no
@@ -4207,6 +4484,11 @@ func_mode_link ()
 	esac
 
 	case $prev in
+	bindir)
+	  bindir="$arg"
+	  prev=
+	  continue
+	  ;;
 	dlfiles|dlprefiles)
 	  if test "$preload" = no; then
 	    # Add the symbol object into the linking commands.
@@ -4468,6 +4750,11 @@ func_mode_link ()
 	continue
 	;;
 
+      -bindir)
+	prev=bindir
+	continue
+	;;
+
       -dlopen)
 	prev=dlfiles
 	continue
@@ -4565,7 +4852,7 @@ func_mode_link ()
       -l*)
 	if test "X$arg" = "X-lc" || test "X$arg" = "X-lm"; then
 	  case $host in
-	  *-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-beos* | *-cegcc*)
+	  *-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-beos* | *-cegcc* | *-*-haiku*)
 	    # These systems don't actually have a C or math library (as such)
 	    continue
 	    ;;
@@ -4751,7 +5038,7 @@ func_mode_link ()
 	for flag in $args; do
 	  IFS="$save_ifs"
           func_quote_for_eval "$flag"
-	  arg="$arg $wl$func_quote_for_eval_result"
+	  arg="$arg $func_quote_for_eval_result"
 	  compiler_flags="$compiler_flags $func_quote_for_eval_result"
 	done
 	IFS="$save_ifs"
@@ -4797,17 +5084,17 @@ func_mode_link ()
 	arg="$func_quote_for_eval_result"
 	;;
 
-      # -64, -mips[0-9] enable 64-bit mode on the SGI compiler
-      # -r[0-9][0-9]* specifies the processor on the SGI compiler
-      # -xarch=*, -xtarget=* enable 64-bit mode on the Sun compiler
-      # +DA*, +DD* enable 64-bit mode on the HP compiler
-      # -q* pass through compiler args for the IBM compiler
-      # -m*, -t[45]*, -txscale* pass through architecture-specific
-      # compiler args for GCC
-      # -F/path gives path to uninstalled frameworks, gcc on darwin
-      # -p, -pg, --coverage, -fprofile-* pass through profiling flag for GCC
-      # @file GCC response files
-      # -tp=* Portland pgcc target processor selection
+      # Flags to be passed through unchanged, with rationale:
+      # -64, -mips[0-9]      enable 64-bit mode for the SGI compiler
+      # -r[0-9][0-9]*        specify processor for the SGI compiler
+      # -xarch=*, -xtarget=* enable 64-bit mode for the Sun compiler
+      # +DA*, +DD*           enable 64-bit mode for the HP compiler
+      # -q*                  compiler args for the IBM compiler
+      # -m*, -t[45]*, -txscale* architecture-specific flags for GCC
+      # -F/path              path to uninstalled frameworks, gcc on darwin
+      # -p, -pg, --coverage, -fprofile-*  profiling flags for GCC
+      # @file                GCC response files
+      # -tp=*                Portland pgcc target processor selection
       -64|-mips[0-9]|-r[0-9][0-9]*|-xarch=*|-xtarget=*|+DA*|+DD*|-q*|-m*| \
       -t[45]*|-txscale*|-p|-pg|--coverage|-fprofile-*|-F*|@*|-tp=*)
         func_quote_for_eval "$arg"
@@ -6522,7 +6809,7 @@ func_mode_link ()
       if test "$build_libtool_libs" = yes; then
 	if test -n "$rpath"; then
 	  case $host in
-	  *-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-os2* | *-*-beos* | *-cegcc*)
+	  *-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-os2* | *-*-beos* | *-cegcc* | *-*-haiku*)
 	    # these systems don't actually have a c library (as such)!
 	    ;;
 	  *-*-rhapsody* | *-*-darwin1.[012])
@@ -8160,9 +8447,27 @@ EOF
 	  fi
 	  $RM $output
 	  # place dlname in correct position for cygwin
+	  # In fact, it would be nice if we could use this code for all target
+	  # systems that can't hard-code library paths into their executables
+	  # and that have no shared library path variable independent of PATH,
+	  # but it turns out we can't easily determine that from inspecting
+	  # libtool variables, so we have to hard-code the OSs to which it
+	  # applies here; at the moment, that means platforms that use the PE
+	  # object format with DLL files.  See the long comment at the top of
+	  # tests/bindir.at for full details.
 	  tdlname=$dlname
 	  case $host,$output,$installed,$module,$dlname in
-	    *cygwin*,*lai,yes,no,*.dll | *mingw*,*lai,yes,no,*.dll | *cegcc*,*lai,yes,no,*.dll) tdlname=../bin/$dlname ;;
+	    *cygwin*,*lai,yes,no,*.dll | *mingw*,*lai,yes,no,*.dll | *cegcc*,*lai,yes,no,*.dll)
+	      # If a -bindir argument was supplied, place the dll there.
+	      if test "x$bindir" != x ;
+	      then
+		func_relative_path "$install_libdir" "$bindir"
+		tdlname=$func_relative_path_result$dlname
+	      else
+		# Otherwise fall back on heuristic.
+		tdlname=../bin/$dlname
+	      fi
+	      ;;
 	  esac
 	  $ECHO > $output "\
 # $outputname - a libtool library file

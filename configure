@@ -11037,13 +11037,13 @@ if test "${lt_cv_nm_interface+set}" = set; then :
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:11040: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:$LINENO: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:11043: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:$LINENO: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:11046: output\"" >&5)
+  (eval echo "\"\$as_me:$LINENO: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -11249,13 +11249,13 @@ if test "${lt_cv_nm_interface+set}" = set; then :
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:11252: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:$LINENO: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:11255: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:$LINENO: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:11258: output\"" >&5)
+  (eval echo "\"\$as_me:$LINENO: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -11701,8 +11701,8 @@ esac
 
 
 
-macro_version='2.2.7a'
-macro_revision='1.3111'
+macro_version='2.2.9a'
+macro_revision='1.3170'
 
 
 
@@ -12452,11 +12452,13 @@ mingw* | pw32*)
   # Base MSYS/MinGW do not provide the 'file' command needed by
   # func_win32_libid shell function, so use a weaker test based on 'objdump',
   # unless we find 'file', for example because we are cross-compiling.
-  if ( file / ) >/dev/null 2>&1; then
+  # func_win32_libid assumes BSD nm, so disallow it if using MS dumpbin.
+  if ( test "$lt_cv_nm_interface" = "BSD nm" && file / ) >/dev/null 2>&1; then
     lt_cv_deplibs_check_method='file_magic ^x86 archive import|^x86 DLL'
     lt_cv_file_magic_cmd='func_win32_libid'
   else
-    lt_cv_deplibs_check_method='file_magic file format pei*-i386(.*architecture: i386)?'
+    # Keep this pattern in sync with the one in func_win32_libid.
+    lt_cv_deplibs_check_method='file_magic file format (pei*-i386(.*architecture: i386)?|pe-arm-wince|pe-x86-64)'
     lt_cv_file_magic_cmd='$OBJDUMP -f'
   fi
   ;;
@@ -12488,6 +12490,10 @@ freebsd* | dragonfly*)
   ;;
 
 gnu*)
+  lt_cv_deplibs_check_method=pass_all
+  ;;
+
+haiku*)
   lt_cv_deplibs_check_method=pass_all
   ;;
 
@@ -13276,7 +13282,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 13279 "configure"' > conftest.$ac_ext
+  echo '#line '$LINENO' "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -13988,6 +13994,38 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $lt_cv_ld_exported_symbols_list" >&5
 $as_echo "$lt_cv_ld_exported_symbols_list" >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -force_load linker flag" >&5
+$as_echo_n "checking for -force_load linker flag... " >&6; }
+if test "${lt_cv_ld_force_load+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  lt_cv_ld_force_load=no
+      cat > conftest.c << _LT_EOF
+int forced_loaded() { return 2;}
+_LT_EOF
+      echo "$LTCC $LTCFLAGS -c -o conftest.o conftest.c" >&5
+      $LTCC $LTCFLAGS -c -o conftest.o conftest.c 2>&5
+      echo "$AR cru libconftest.a conftest.o" >&5
+      $AR cru libconftest.a conftest.o 2>&5
+      echo "$RANLIB libconftest.a" >&5
+      $RANLIB libconftest.a 2>&5
+      cat > conftest.c << _LT_EOF
+int main() { return 0;}
+_LT_EOF
+      echo "$LTCC $LTCFLAGS $LDFLAGS -o conftest conftest.c -Wl,-force_load,./libconftest.a" >&5
+      $LTCC $LTCFLAGS $LDFLAGS -o conftest conftest.c -Wl,-force_load,./libconftest.a 2>conftest.err
+      _lt_result=$?
+      if test -f conftest && test ! -s conftest.err && test $_lt_result = 0 && $GREP forced_load conftest 2>&1 >/dev/null; then
+	lt_cv_ld_force_load=yes
+      else
+	cat conftest.err >&5
+      fi
+        rm -f conftest.err libconftest.a conftest conftest.c
+        rm -rf conftest.dSYM
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $lt_cv_ld_force_load" >&5
+$as_echo "$lt_cv_ld_force_load" >&6; }
     case $host_os in
     rhapsody* | darwin1.[012])
       _lt_dar_allow_undefined='${wl}-undefined ${wl}suppress' ;;
@@ -14015,7 +14053,7 @@ $as_echo "$lt_cv_ld_exported_symbols_list" >&6; }
     else
       _lt_dar_export_syms='~$NMEDIT -s $output_objdir/${libname}-symbols.expsym ${lib}'
     fi
-    if test "$DSYMUTIL" != ":"; then
+    if test "$DSYMUTIL" != ":" && test "$lt_cv_ld_force_load" = "no"; then
       _lt_dsymutil='~$DSYMUTIL $lib || :'
     else
       _lt_dsymutil=
@@ -14487,7 +14525,12 @@ if test -n "$compiler"; then
 lt_prog_compiler_no_builtin_flag=
 
 if test "$GCC" = yes; then
-  lt_prog_compiler_no_builtin_flag=' -fno-builtin'
+  case $cc_basename in
+  nvcc*)
+    lt_prog_compiler_no_builtin_flag=' -Xcompiler -fno-builtin' ;;
+  *)
+    lt_prog_compiler_no_builtin_flag=' -fno-builtin' ;;
+  esac
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if $compiler supports -fno-rtti -fno-exceptions" >&5
 $as_echo_n "checking if $compiler supports -fno-rtti -fno-exceptions... " >&6; }
@@ -14507,11 +14550,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14510: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:$LINENO: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:14514: \$? = $ac_status" >&5
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -14593,6 +14636,12 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
       lt_prog_compiler_pic='-fno-common'
       ;;
 
+    haiku*)
+      # PIC is the default for Haiku.
+      # The "-static" flag exists, but is broken.
+      lt_prog_compiler_static=
+      ;;
+
     hpux*)
       # PIC is the default for 64-bit PA HP-UX, but not for 32-bit
       # PA HP-UX.  On IA64 HP-UX, PIC is the default but the pic flag
@@ -14633,6 +14682,13 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
 
     *)
       lt_prog_compiler_pic='-fPIC'
+      ;;
+    esac
+
+    case $cc_basename in
+    nvcc*) # Cuda Compiler Driver 2.2
+      lt_prog_compiler_wl='-Xlinker '
+      lt_prog_compiler_pic='-Xcompiler -fPIC'
       ;;
     esac
   else
@@ -14697,7 +14753,7 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
 	lt_prog_compiler_pic='--shared'
 	lt_prog_compiler_static='--static'
 	;;
-      pgcc* | pgf77* | pgf90* | pgf95*)
+      pgcc* | pgf77* | pgf90* | pgf95* | pgfortran*)
         # Portland Group compilers (*not* the Pentium gcc compiler,
 	# which looks to be a dead project)
 	lt_prog_compiler_wl='-Wl,'
@@ -14759,7 +14815,7 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
       lt_prog_compiler_pic='-KPIC'
       lt_prog_compiler_static='-Bstatic'
       case $cc_basename in
-      f77* | f90* | f95*)
+      f77* | f90* | f95* | sunf77* | sunf90* | sunf95*)
 	lt_prog_compiler_wl='-Qoption ld ';;
       *)
 	lt_prog_compiler_wl='-Wl,';;
@@ -14846,11 +14902,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14849: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:$LINENO: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:14853: \$? = $ac_status" >&5
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -14951,11 +15007,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:14954: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:$LINENO: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:14958: \$? = $ac_status" >&5
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15006,11 +15062,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15009: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:$LINENO: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:15013: \$? = $ac_status" >&5
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15172,6 +15228,7 @@ $as_echo_n "checking whether the $compiler linker ($LD) supports shared librarie
     fi
     supports_anon_versioning=no
     case `$LD -v 2>&1` in
+      *GNU\ gold*) supports_anon_versioning=yes ;;
       *\ [01].* | *\ 2.[0-9].* | *\ 2.10.*) ;; # catch versions < 2.11
       *\ 2.11.93.0.2\ *) supports_anon_versioning=yes ;; # RH7.3 ...
       *\ 2.11.92.0.12\ *) supports_anon_versioning=yes ;; # Mandrake 8.2 ...
@@ -15250,6 +15307,11 @@ _LT_EOF
       fi
       ;;
 
+    haiku*)
+      archive_cmds='$CC -shared $libobjs $deplibs $compiler_flags ${wl}-soname $wl$soname -o $lib'
+      link_all_deplibs=yes
+      ;;
+
     interix[3-9]*)
       hardcode_direct=no
       hardcode_shlibpath_var=no
@@ -15282,7 +15344,8 @@ _LT_EOF
 	  whole_archive_flag_spec='${wl}--whole-archive`for conv in $convenience\"\"; do test  -n \"$conv\" && new_convenience=\"$new_convenience,$conv\"; done; func_echo_all \"$new_convenience\"` ${wl}--no-whole-archive'
 	  tmp_addflag=' $pic_flag'
 	  ;;
-	pgf77* | pgf90* | pgf95*)	# Portland Group f77 and f90 compilers
+	pgf77* | pgf90* | pgf95* | pgfortran*)
+					# Portland Group f77 and f90 compilers
 	  whole_archive_flag_spec='${wl}--whole-archive`for conv in $convenience\"\"; do test  -n \"$conv\" && new_convenience=\"$new_convenience,$conv\"; done; func_echo_all \"$new_convenience\"` ${wl}--no-whole-archive'
 	  tmp_addflag=' $pic_flag -Mnomain' ;;
 	ecc*,ia64* | icc*,ia64*)	# Intel C compiler on ia64
@@ -15297,6 +15360,10 @@ _LT_EOF
 	xl[cC]* | bgxl[cC]* | mpixl[cC]*) # IBM XL C 8.0 on PPC (deal with xlf below)
 	  tmp_sharedflag='-qmkshrobj'
 	  tmp_addflag= ;;
+	nvcc*)	# Cuda Compiler Driver 2.2
+	  whole_archive_flag_spec='${wl}--whole-archive`for conv in $convenience\"\"; do test  -n \"$conv\" && new_convenience=\"$new_convenience,$conv\"; done; func_echo_all \"$new_convenience\"` ${wl}--no-whole-archive'
+	  compiler_needs_object=yes
+	  ;;
 	esac
 	case `$CC -V 2>&1 | sed 5q` in
 	*Sun\ C*)			# Sun C 5.9
@@ -15321,12 +15388,12 @@ _LT_EOF
 	  whole_archive_flag_spec='--whole-archive$convenience --no-whole-archive'
 	  hardcode_libdir_flag_spec=
 	  hardcode_libdir_flag_spec_ld='-rpath $libdir'
-	  archive_cmds='$LD -shared $libobjs $deplibs $compiler_flags -soname $soname -o $lib'
+	  archive_cmds='$LD -shared $libobjs $deplibs $linker_flags -soname $soname -o $lib'
 	  if test "x$supports_anon_versioning" = xyes; then
 	    archive_expsym_cmds='echo "{ global:" > $output_objdir/$libname.ver~
 	      cat $export_symbols | sed -e "s/\(.*\)/\1;/" >> $output_objdir/$libname.ver~
 	      echo "local: *; };" >> $output_objdir/$libname.ver~
-	      $LD -shared $libobjs $deplibs $compiler_flags -soname $soname -version-script $output_objdir/$libname.ver -o $lib'
+	      $LD -shared $libobjs $deplibs $linker_flags -soname $soname -version-script $output_objdir/$libname.ver -o $lib'
 	  fi
 	  ;;
 	esac
@@ -15673,7 +15740,11 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
   hardcode_direct=no
   hardcode_automatic=yes
   hardcode_shlibpath_var=unsupported
-  whole_archive_flag_spec=''
+  if test "$lt_cv_ld_force_load" = "yes"; then
+    whole_archive_flag_spec='`for conv in $convenience\"\"; do test  -n \"$conv\" && new_convenience=\"$new_convenience ${wl}-force_load,$conv\"; done; func_echo_all \"$new_convenience\"`'
+  else
+    whole_archive_flag_spec=''
+  fi
   link_all_deplibs=yes
   allow_undefined_flag="$_lt_dar_allow_undefined"
   case $cc_basename in
@@ -16679,6 +16750,19 @@ gnu*)
   hardcode_into_libs=yes
   ;;
 
+haiku*)
+  version_type=linux
+  need_lib_prefix=no
+  need_version=no
+  dynamic_linker="$host_os runtime_loader"
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}${major} ${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
+  shlibpath_var=LIBRARY_PATH
+  shlibpath_overrides_runpath=yes
+  sys_lib_dlsearch_path_spec='/boot/home/config/lib /boot/common/lib /boot/system/lib'
+  hardcode_into_libs=yes
+  ;;
+
 hpux9* | hpux10* | hpux11*)
   # Give a soname corresponding to the major version so that dld.sl refuses to
   # link against other versions.
@@ -17471,7 +17555,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17474 "configure"
+#line $LINENO "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17512,7 +17596,13 @@ else
 #  endif
 #endif
 
-void fnord() { int i=42;}
+/* When -fvisbility=hidden is used, assume the code has been annotated
+   correspondingly for the symbols needed.  */
+#if defined(__GNUC__) && (((__GNUC__ == 3) && (__GNUC_MINOR__ >= 3)) || (__GNUC__ > 3))
+void fnord () __attribute__((visibility("default")));
+#endif
+
+void fnord () { int i=42; }
 int main ()
 {
   void *self = dlopen (0, LT_DLGLOBAL|LT_DLLAZY_OR_NOW);
@@ -17521,7 +17611,11 @@ int main ()
   if (self)
     {
       if (dlsym (self,"fnord"))       status = $lt_dlno_uscore;
-      else if (dlsym( self,"_fnord")) status = $lt_dlneed_uscore;
+      else
+        {
+	  if (dlsym( self,"_fnord"))  status = $lt_dlneed_uscore;
+          else puts (dlerror ());
+	}
       /* dlclose (self); */
     }
   else
@@ -17567,7 +17661,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17570 "configure"
+#line $LINENO "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17608,7 +17702,13 @@ else
 #  endif
 #endif
 
-void fnord() { int i=42;}
+/* When -fvisbility=hidden is used, assume the code has been annotated
+   correspondingly for the symbols needed.  */
+#if defined(__GNUC__) && (((__GNUC__ == 3) && (__GNUC_MINOR__ >= 3)) || (__GNUC__ > 3))
+void fnord () __attribute__((visibility("default")));
+#endif
+
+void fnord () { int i=42; }
 int main ()
 {
   void *self = dlopen (0, LT_DLGLOBAL|LT_DLLAZY_OR_NOW);
@@ -17617,7 +17717,11 @@ int main ()
   if (self)
     {
       if (dlsym (self,"fnord"))       status = $lt_dlno_uscore;
-      else if (dlsym( self,"_fnord")) status = $lt_dlneed_uscore;
+      else
+        {
+	  if (dlsym( self,"_fnord"))  status = $lt_dlneed_uscore;
+          else puts (dlerror ());
+	}
       /* dlclose (self); */
     }
   else
@@ -18185,7 +18289,7 @@ with_gnu_ld=$lt_cv_prog_gnu_ld
       # Commands to make compiler produce verbose output that lists
       # what "hidden" libraries, object files and flags are used when
       # linking a shared library.
-      output_verbose_link_cmd='$CC -shared $CFLAGS -v conftest.$objext 2>&1 | $GREP "\-L"'
+      output_verbose_link_cmd='$CC -shared $CFLAGS -v conftest.$objext 2>&1 | $GREP -v "^Configured with:" | $GREP "\-L"'
 
     else
       GXX=no
@@ -18437,7 +18541,11 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
   hardcode_direct_CXX=no
   hardcode_automatic_CXX=yes
   hardcode_shlibpath_var_CXX=unsupported
-  whole_archive_flag_spec_CXX=''
+  if test "$lt_cv_ld_force_load" = "yes"; then
+    whole_archive_flag_spec_CXX='`for conv in $convenience\"\"; do test  -n \"$conv\" && new_convenience=\"$new_convenience ${wl}-force_load,$conv\"; done; func_echo_all \"$new_convenience\"`'
+  else
+    whole_archive_flag_spec_CXX=''
+  fi
   link_all_deplibs_CXX=yes
   allow_undefined_flag_CXX="$_lt_dar_allow_undefined"
   case $cc_basename in
@@ -18496,6 +18604,11 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
         ;;
 
       gnu*)
+        ;;
+
+      haiku*)
+        archive_cmds_CXX='$CC -shared $libobjs $deplibs $compiler_flags ${wl}-soname $wl$soname -o $lib'
+        link_all_deplibs_CXX=yes
         ;;
 
       hpux9*)
@@ -18709,26 +18822,26 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
           pgCC* | pgcpp*)
             # Portland Group C++ compiler
 	    case `$CC -V` in
-	    *pgCC\ [1-5]* | *pgcpp\ [1-5]*)
+	    *pgCC\ [1-5].* | *pgcpp\ [1-5].*)
 	      prelink_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $objs $libobjs $compile_deplibs~
-		compile_command="$compile_command `find $tpldir -name \*.o | $NL2SP`"'
+		compile_command="$compile_command `find $tpldir -name \*.o | sort | $NL2SP`"'
 	      old_archive_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $oldobjs$old_deplibs~
-		$AR $AR_FLAGS $oldlib$oldobjs$old_deplibs `find $tpldir -name \*.o | $NL2SP`~
+		$AR $AR_FLAGS $oldlib$oldobjs$old_deplibs `find $tpldir -name \*.o | sort | $NL2SP`~
 		$RANLIB $oldlib'
 	      archive_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $predep_objects $libobjs $deplibs $convenience $postdep_objects~
-		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname -o $lib'
+		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | sort | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname -o $lib'
 	      archive_expsym_cmds_CXX='tpldir=Template.dir~
 		rm -rf $tpldir~
 		$CC --prelink_objects --instantiation_dir $tpldir $predep_objects $libobjs $deplibs $convenience $postdep_objects~
-		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname ${wl}-retain-symbols-file ${wl}$export_symbols -o $lib'
+		$CC -shared $pic_flag $predep_objects $libobjs $deplibs `find $tpldir -name \*.o | sort | $NL2SP` $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname ${wl}-retain-symbols-file ${wl}$export_symbols -o $lib'
 	      ;;
-	    *) # Version 6 will use weak symbols
+	    *) # Version 6 and above use weak symbols
 	      archive_cmds_CXX='$CC -shared $pic_flag $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname -o $lib'
 	      archive_expsym_cmds_CXX='$CC -shared $pic_flag $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname ${wl}-retain-symbols-file ${wl}$export_symbols -o $lib'
 	      ;;
@@ -18931,7 +19044,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	      # Commands to make compiler produce verbose output that lists
 	      # what "hidden" libraries, object files and flags are used when
 	      # linking a shared library.
-	      output_verbose_link_cmd='$CC -shared $CFLAGS -v conftest.$objext 2>&1 | $GREP "\-L"'
+	      output_verbose_link_cmd='$CC -shared $CFLAGS -v conftest.$objext 2>&1 | $GREP -v "^Configured with:" | $GREP "\-L"'
 
 	    else
 	      # FIXME: insert proper C++ library support
@@ -18967,7 +19080,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 
       solaris*)
         case $cc_basename in
-          CC*)
+          CC* | sunCC*)
 	    # Sun C++ 4.2, 5.x and Centerline C++
             archive_cmds_need_lc_CXX=yes
 	    no_undefined_flag_CXX=' -zdefs'
@@ -19015,7 +19128,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	        # Commands to make compiler produce verbose output that lists
 	        # what "hidden" libraries, object files and flags are used when
 	        # linking a shared library.
-	        output_verbose_link_cmd='$CC -shared $CFLAGS -v conftest.$objext 2>&1 | $GREP "\-L"'
+	        output_verbose_link_cmd='$CC -shared $CFLAGS -v conftest.$objext 2>&1 | $GREP -v "^Configured with:" | $GREP "\-L"'
 	      else
 	        # g++ 2.7 appears to require `-G' NOT `-shared' on this
 	        # platform.
@@ -19026,7 +19139,7 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
 	        # Commands to make compiler produce verbose output that lists
 	        # what "hidden" libraries, object files and flags are used when
 	        # linking a shared library.
-	        output_verbose_link_cmd='$CC -G $CFLAGS -v conftest.$objext 2>&1 | $GREP "\-L"'
+	        output_verbose_link_cmd='$CC -G $CFLAGS -v conftest.$objext 2>&1 | $GREP -v "^Configured with:" | $GREP "\-L"'
 	      fi
 
 	      hardcode_libdir_flag_spec_CXX='${wl}-R $wl$libdir'
@@ -19265,7 +19378,7 @@ linux*)
 
 solaris*)
   case $cc_basename in
-  CC*)
+  CC* | sunCC*)
     # The more standards-conforming stlport4 library is
     # incompatible with the Cstd library. Avoid specifying
     # it if it's in CXXFLAGS. Ignore libCrun as
@@ -19380,6 +19493,11 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
     *djgpp*)
       # DJGPP does not support shared libraries at all
       lt_prog_compiler_pic_CXX=
+      ;;
+    haiku*)
+      # PIC is the default for Haiku.
+      # The "-static" flag exists, but is broken.
+      lt_prog_compiler_static_CXX=
       ;;
     interix[3-9]*)
       # Interix 3.x gcc -fpic/-fPIC options generate broken code.
@@ -19582,7 +19700,7 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
 	;;
       solaris*)
 	case $cc_basename in
-	  CC*)
+	  CC* | sunCC*)
 	    # Sun C++ 4.2, 5.x and Centerline C++
 	    lt_prog_compiler_pic_CXX='-KPIC'
 	    lt_prog_compiler_static_CXX='-Bstatic'
@@ -19674,11 +19792,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:19677: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:$LINENO: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:19681: \$? = $ac_status" >&5
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -19773,11 +19891,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:19776: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:$LINENO: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:19780: \$? = $ac_status" >&5
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -19825,11 +19943,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:19828: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:$LINENO: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:19832: \$? = $ac_status" >&5
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -20292,6 +20410,19 @@ gnu*)
   library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}${major} ${libname}${shared_ext}'
   soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
+  hardcode_into_libs=yes
+  ;;
+
+haiku*)
+  version_type=linux
+  need_lib_prefix=no
+  need_version=no
+  dynamic_linker="$host_os runtime_loader"
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}${major} ${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
+  shlibpath_var=LIBRARY_PATH
+  shlibpath_overrides_runpath=yes
+  sys_lib_dlsearch_path_spec='/boot/home/config/lib /boot/common/lib /boot/system/lib'
   hardcode_into_libs=yes
   ;;
 
@@ -20969,6 +21100,12 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
       lt_prog_compiler_pic_F77='-fno-common'
       ;;
 
+    haiku*)
+      # PIC is the default for Haiku.
+      # The "-static" flag exists, but is broken.
+      lt_prog_compiler_static_F77=
+      ;;
+
     hpux*)
       # PIC is the default for 64-bit PA HP-UX, but not for 32-bit
       # PA HP-UX.  On IA64 HP-UX, PIC is the default but the pic flag
@@ -21009,6 +21146,13 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
 
     *)
       lt_prog_compiler_pic_F77='-fPIC'
+      ;;
+    esac
+
+    case $cc_basename in
+    nvcc*) # Cuda Compiler Driver 2.2
+      lt_prog_compiler_wl_F77='-Xlinker '
+      lt_prog_compiler_pic_F77='-Xcompiler -fPIC'
       ;;
     esac
   else
@@ -21073,7 +21217,7 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
 	lt_prog_compiler_pic_F77='--shared'
 	lt_prog_compiler_static_F77='--static'
 	;;
-      pgcc* | pgf77* | pgf90* | pgf95*)
+      pgcc* | pgf77* | pgf90* | pgf95* | pgfortran*)
         # Portland Group compilers (*not* the Pentium gcc compiler,
 	# which looks to be a dead project)
 	lt_prog_compiler_wl_F77='-Wl,'
@@ -21135,7 +21279,7 @@ $as_echo_n "checking for $compiler option to produce PIC... " >&6; }
       lt_prog_compiler_pic_F77='-KPIC'
       lt_prog_compiler_static_F77='-Bstatic'
       case $cc_basename in
-      f77* | f90* | f95*)
+      f77* | f90* | f95* | sunf77* | sunf90* | sunf95*)
 	lt_prog_compiler_wl_F77='-Qoption ld ';;
       *)
 	lt_prog_compiler_wl_F77='-Wl,';;
@@ -21219,11 +21363,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:21222: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:$LINENO: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:21226: \$? = $ac_status" >&5
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -21318,11 +21462,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:21321: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:$LINENO: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:21325: \$? = $ac_status" >&5
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -21370,11 +21514,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:21373: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:$LINENO: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:21377: \$? = $ac_status" >&5
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -21533,6 +21677,7 @@ $as_echo_n "checking whether the $compiler linker ($LD) supports shared librarie
     fi
     supports_anon_versioning=no
     case `$LD -v 2>&1` in
+      *GNU\ gold*) supports_anon_versioning=yes ;;
       *\ [01].* | *\ 2.[0-9].* | *\ 2.10.*) ;; # catch versions < 2.11
       *\ 2.11.93.0.2\ *) supports_anon_versioning=yes ;; # RH7.3 ...
       *\ 2.11.92.0.12\ *) supports_anon_versioning=yes ;; # Mandrake 8.2 ...
@@ -21611,6 +21756,11 @@ _LT_EOF
       fi
       ;;
 
+    haiku*)
+      archive_cmds_F77='$CC -shared $libobjs $deplibs $compiler_flags ${wl}-soname $wl$soname -o $lib'
+      link_all_deplibs_F77=yes
+      ;;
+
     interix[3-9]*)
       hardcode_direct_F77=no
       hardcode_shlibpath_var_F77=no
@@ -21643,7 +21793,8 @@ _LT_EOF
 	  whole_archive_flag_spec_F77='${wl}--whole-archive`for conv in $convenience\"\"; do test  -n \"$conv\" && new_convenience=\"$new_convenience,$conv\"; done; func_echo_all \"$new_convenience\"` ${wl}--no-whole-archive'
 	  tmp_addflag=' $pic_flag'
 	  ;;
-	pgf77* | pgf90* | pgf95*)	# Portland Group f77 and f90 compilers
+	pgf77* | pgf90* | pgf95* | pgfortran*)
+					# Portland Group f77 and f90 compilers
 	  whole_archive_flag_spec_F77='${wl}--whole-archive`for conv in $convenience\"\"; do test  -n \"$conv\" && new_convenience=\"$new_convenience,$conv\"; done; func_echo_all \"$new_convenience\"` ${wl}--no-whole-archive'
 	  tmp_addflag=' $pic_flag -Mnomain' ;;
 	ecc*,ia64* | icc*,ia64*)	# Intel C compiler on ia64
@@ -21658,6 +21809,10 @@ _LT_EOF
 	xl[cC]* | bgxl[cC]* | mpixl[cC]*) # IBM XL C 8.0 on PPC (deal with xlf below)
 	  tmp_sharedflag='-qmkshrobj'
 	  tmp_addflag= ;;
+	nvcc*)	# Cuda Compiler Driver 2.2
+	  whole_archive_flag_spec_F77='${wl}--whole-archive`for conv in $convenience\"\"; do test  -n \"$conv\" && new_convenience=\"$new_convenience,$conv\"; done; func_echo_all \"$new_convenience\"` ${wl}--no-whole-archive'
+	  compiler_needs_object_F77=yes
+	  ;;
 	esac
 	case `$CC -V 2>&1 | sed 5q` in
 	*Sun\ C*)			# Sun C 5.9
@@ -21682,12 +21837,12 @@ _LT_EOF
 	  whole_archive_flag_spec_F77='--whole-archive$convenience --no-whole-archive'
 	  hardcode_libdir_flag_spec_F77=
 	  hardcode_libdir_flag_spec_ld_F77='-rpath $libdir'
-	  archive_cmds_F77='$LD -shared $libobjs $deplibs $compiler_flags -soname $soname -o $lib'
+	  archive_cmds_F77='$LD -shared $libobjs $deplibs $linker_flags -soname $soname -o $lib'
 	  if test "x$supports_anon_versioning" = xyes; then
 	    archive_expsym_cmds_F77='echo "{ global:" > $output_objdir/$libname.ver~
 	      cat $export_symbols | sed -e "s/\(.*\)/\1;/" >> $output_objdir/$libname.ver~
 	      echo "local: *; };" >> $output_objdir/$libname.ver~
-	      $LD -shared $libobjs $deplibs $compiler_flags -soname $soname -version-script $output_objdir/$libname.ver -o $lib'
+	      $LD -shared $libobjs $deplibs $linker_flags -soname $soname -version-script $output_objdir/$libname.ver -o $lib'
 	  fi
 	  ;;
 	esac
@@ -22022,7 +22177,11 @@ if test -z "$aix_libpath"; then aix_libpath="/usr/lib:/lib"; fi
   hardcode_direct_F77=no
   hardcode_automatic_F77=yes
   hardcode_shlibpath_var_F77=unsupported
-  whole_archive_flag_spec_F77=''
+  if test "$lt_cv_ld_force_load" = "yes"; then
+    whole_archive_flag_spec_F77='`for conv in $convenience\"\"; do test  -n \"$conv\" && new_convenience=\"$new_convenience ${wl}-force_load,$conv\"; done; func_echo_all \"$new_convenience\"`'
+  else
+    whole_archive_flag_spec_F77=''
+  fi
   link_all_deplibs_F77=yes
   allow_undefined_flag_F77="$_lt_dar_allow_undefined"
   case $cc_basename in
@@ -22817,6 +22976,19 @@ gnu*)
   library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}${major} ${libname}${shared_ext}'
   soname_spec='${libname}${release}${shared_ext}$major'
   shlibpath_var=LD_LIBRARY_PATH
+  hardcode_into_libs=yes
+  ;;
+
+haiku*)
+  version_type=linux
+  need_lib_prefix=no
+  need_version=no
+  dynamic_linker="$host_os runtime_loader"
+  library_names_spec='${libname}${release}${shared_ext}$versuffix ${libname}${release}${shared_ext}${major} ${libname}${shared_ext}'
+  soname_spec='${libname}${release}${shared_ext}$major'
+  shlibpath_var=LIBRARY_PATH
+  shlibpath_overrides_runpath=yes
+  sys_lib_dlsearch_path_spec='/boot/home/config/lib /boot/common/lib /boot/system/lib'
   hardcode_into_libs=yes
   ;;
 
@@ -24136,7 +24308,7 @@ esac
 # from libtool
 LIBM=
 case $host in
-*-*-beos* | *-*-cegcc* | *-*-cygwin* | *-*-pw32* | *-*-darwin*)
+*-*-beos* | *-*-cegcc* | *-*-cygwin* | *-*-haiku* | *-*-pw32* | *-*-darwin*)
   # These system don't have libm, or don't need it
   ;;
 *-ncr-sysv4.3*)
@@ -29012,6 +29184,9 @@ _LTECHO_EOF'
 
 # Quote evaled strings.
 for var in NM \
+AS \
+DLLTOOL \
+OBJDUMP \
 SHELL \
 ECHO \
 SED \
@@ -29889,7 +30064,8 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 #
 #   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005,
-#                 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+#                 2006, 2007, 2008, 2009, 2010 Free Software Foundation,
+#                 Inc.
 #   Written by Gordon Matzigkeit, 1996
 #
 #   This file is part of GNU Libtool.
@@ -29925,13 +30101,13 @@ available_tags="CXX F77 "
 NM=$lt_NM
 
 # Assembler program.
-AS=$AS
+AS=$lt_AS
 
 # DLL creation program.
-DLLTOOL=$DLLTOOL
+DLLTOOL=$lt_DLLTOOL
 
 # Object dumper program.
-OBJDUMP=$OBJDUMP
+OBJDUMP=$lt_OBJDUMP
 
 # Which release of libtool.m4 was used?
 macro_version=$macro_version
