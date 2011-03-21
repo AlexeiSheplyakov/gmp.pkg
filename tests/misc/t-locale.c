@@ -52,7 +52,7 @@ main (void)
 char *decimal_point;
 
 /* Replace the libc localeconv with one we can manipulate. */
-#if HAVE_LOCALECONV
+#if HAVE_LOCALECONV && !defined(_WIN32)
 struct lconv *
 localeconv (void)
 {
