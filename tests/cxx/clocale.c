@@ -41,7 +41,7 @@ the GNU MP Library test suite.  If not, see http://www.gnu.org/licenses/.  */
 
 extern char point_string[];
 
-#if HAVE_LOCALECONV
+#if HAVE_LOCALECONV && !defined(_WIN32)
 struct lconv *
 localeconv (void)
 {
