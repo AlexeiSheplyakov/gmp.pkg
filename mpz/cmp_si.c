@@ -1,8 +1,8 @@
 /* mpz_cmp_si(u,v) -- Compare an integer U with a single-word int V.
    Return positive, zero, or negative based on if U > V, U == V, or U < V.
 
-Copyright 1991, 1993, 1994, 1995, 1996, 2000, 2001, 2002 Free Software
-Foundation, Inc.
+Copyright 1991, 1993, 1994, 1995, 1996, 2000, 2001, 2002, 2012, 2013 Free
+Software Foundation, Inc.
 
 This file is part of the GNU MP Library.
 
@@ -25,10 +25,10 @@ along with the GNU MP Library.  If not, see http://www.gnu.org/licenses/.  */
 int
 _mpz_cmp_si (mpz_srcptr u, signed long int v_digit) __GMP_NOTHROW
 {
-  mp_size_t usize = u->_mp_size;
+  mp_size_t usize = SIZ (u);
   mp_size_t vsize;
   mp_limb_t u_digit;
-  unsigned long int absv_digit = (unsigned long int) v_digit;
+  unsigned long int absv_digit;
 
 #if GMP_NAIL_BITS != 0
   /* FIXME.  This isn't very pretty.  */
@@ -46,8 +46,8 @@ _mpz_cmp_si (mpz_srcptr u, signed long int v_digit) __GMP_NOTHROW
   else if (v_digit < 0)
     {
       vsize = -1;
-      absv_digit = -absv_digit;
     }
+  absv_digit = ABS_CAST (unsigned long int, v_digit);
 
   if (usize != vsize)
     return usize - vsize;
@@ -55,7 +55,7 @@ _mpz_cmp_si (mpz_srcptr u, signed long int v_digit) __GMP_NOTHROW
   if (usize == 0)
     return 0;
 
-  u_digit = u->_mp_d[0];
+  u_digit = PTR (u)[0];
 
   if (u_digit == (mp_limb_t) absv_digit)
     return 0;
